@@ -776,7 +776,7 @@ async function onVibeImport(e: Event): Promise<void> {
             @keydown.space.prevent="showNegative = !showNegative"
           >
             负面提示词
-            <span class="tlb-hint">(覆写;留空 = 官方默认)</span>
+            <span class="tlb-hint">（覆写；留空 = 官方默认）</span>
             <Icon class="tlb-gen__negarrow" :class="{ 'tlb-gen__negarrow--closed': !showNegative }" name="chevron-down" />
           </div>
           <div v-if="showNegative" class="tlb-fieldbox">
@@ -799,9 +799,9 @@ async function onVibeImport(e: Event): Promise<void> {
             <span class="tlb-vibe__tip" tabindex="0">
               <Icon name="info" />
               <span class="tlb-vibe__tip-body">
-                <span class="tlb-vibe__tip-lead">上传参考图把画风 / 构图 / 色彩迁移到生成结果。两种用法:</span>
-                <span><b>① 直接勾选:</b>勾选即时生效,生成时叠加;缺编码会在生成前自动补(花点数)。</span>
-                <span><b>② Vibe 组:</b>勾选后用 💾 存成 Vibe 组,下拉选组一键整体套用;之后 💾 覆盖改组,所有引用一起更新。</span>
+                <span class="tlb-vibe__tip-lead">上传参考图把画风 / 构图 / 色彩迁移到生成结果。两种用法：</span>
+                <span><b>① 直接勾选：</b>勾选即时生效，生成时叠加；缺编码会在生成前自动补（花点数）。</span>
+                <span><b>② Vibe 组：</b>勾选后用 💾 存成 Vibe 组，下拉选组一键整体套用；之后 💾 覆盖改组，所有引用一起更新。</span>
               </span>
             </span>
           </h3>
@@ -844,7 +844,7 @@ async function onVibeImport(e: Event): Promise<void> {
             @click="vibeFileRef?.click()"
           >
             <Icon :name="vibeUploading ? 'loader' : 'cloud-up'" :size="17" :spin="vibeUploading" />
-            <span>{{ vibeUploading ? '正在处理…' : '上传参考图(编码花点数,仅 NAI V4 / V4.5 支持)' }}</span>
+            <span>{{ vibeUploading ? '正在处理…' : '上传参考图（编码花点数，仅 NAI V4 / V4.5 支持）' }}</span>
           </button>
           <input
             ref="vibeFileRef"

@@ -728,7 +728,7 @@ const RESOURCE_LINKS = [
   {
     name: 'Spell 咒语解析',
     url: 'https://looyun.github.io/spell/',
-    desc: '拖入 AI 原图PNG即可提取提示词、画师/风格标签;纯浏览器本地解析,图片不上传。',
+    desc: '拖入 AI 原图PNG即可提取提示词、画师/风格标签；纯浏览器本地解析，图片不上传。',
   },
   {
     name: 'Civitai',
@@ -743,17 +743,17 @@ const RESOURCE_LINKS = [
   {
     name: 'Anima 画风画廊',
     url: 'https://anima.mooshieblob.com/',
-    desc: '收录 4.2 万+画师,按画师浏览风格效果样图。',
+    desc: '收录 4.2 万+画师，按画师浏览风格效果样图。',
   },
   {
     name: 'NovelAI 标签云',
     url: 'https://novelai.quicktagcloud.com/?c=artist_nai5_personal',
-    desc: '按使用热度浏览 NAI 标签,此链接直达 NAI5 画师标签。',
+    desc: '按使用热度浏览 NAI 标签，此链接直达 NAI5 画师标签。',
   },
   {
     name: 'NAI 画师融合法典',
     url: 'https://nai-bot.pages.dev/%E6%B3%95%E5%85%B8/artists-gallery/',
-    desc: '433 组画师画风融合配方,附 SMEA/构图成图对比,词条可一键复制。',
+    desc: '433 组画师画风融合配方，附 SMEA/构图成图对比，词条可一键复制。',
   },
 ] as const;
 </script>
@@ -795,7 +795,7 @@ const RESOURCE_LINKS = [
         <div class="tlb-cfg__field">
           <span class="tlb-cfg__label">接口地址</span>
           <input v-model="epDraft.url" class="tlb-input" :disabled="activeIsOfficial" :placeholder="activeIsOfficial ? '官方地址固定' : 'https://'" />
-          <p v-if="activeIsOfficial" class="tlb-hint">官方API时使用默认地址;点击「+」可新增第三方接入点</p>
+          <p v-if="activeIsOfficial" class="tlb-hint">官方API时使用默认地址；点击「+」可新增第三方接入点</p>
         </div>
 
         <!-- API Key:眼睛嵌在输入框内右侧 -->
@@ -963,16 +963,16 @@ const RESOURCE_LINKS = [
       </button>
       <div v-if="open.sync" class="tlb-card__body">
         <p class="tlb-hint">
-          单向只读读取对方数据(绝不改动对方):画师串、正/负词、预览图、vibe 与 vibe 组。
-          画师串<b>以名称为准,重名自动覆盖</b>;先同步一家再同步另一家时,后者独有的预览图/vibe 会补进同名条目。
+          单向只读读取对方数据（绝不改动对方）：画师串、正/负词、预览图、vibe 与 vibe 组。
+          画师串<b>以名称为准，重名自动覆盖</b>；先同步一家再同步另一家时，后者独有的预览图/vibe 会补进同名条目。
           vibe 按编码指纹增量合并、<b>导入后默认不启用</b>。可重复点按更新。
         </p>
 
         <div class="tlb-sync-item">
           <div class="tlb-sync-item__meta">
             <b>柏宝绘 ST-BaiBai-Image</b>
-            <span class="tlb-hint">NAI 配置(接入点/模型/采样器/尺寸/质量词)、画师串、预览图、vibe 与组;负词为完整口径原样搬。</span>
-            <span class="tlb-sync-item__time">上次:{{ syncTime(settings.lastBaibaiSyncAt) }}</span>
+            <span class="tlb-hint">NAI 配置（接入点/模型/采样器/尺寸/质量词）、画师串、预览图、vibe 与组；负词为完整口径原样搬。</span>
+            <span class="tlb-sync-item__time">上次：{{ syncTime(settings.lastBaibaiSyncAt) }}</span>
           </div>
           <button class="tlb-btn tlb-btn--accent tlb-btn--sm" :disabled="anySyncing" @click="runSync('baibai')">
             <Icon :name="syncState.baibai.busy ? 'loader' : 'download'" :spin="syncState.baibai.busy" />
@@ -984,7 +984,7 @@ const RESOURCE_LINKS = [
           <div class="tlb-sync-item__meta">
             <b>智绘姬 st-chatu8</b>
             <span class="tlb-hint">画师串、正/负词(已烤入官方默认负面词基线)、预览图、vibe 预设与组;需在智绘姬里保存过数据。</span>
-            <span class="tlb-sync-item__time">上次:{{ syncTime(settings.lastChatu8SyncAt) }}</span>
+            <span class="tlb-sync-item__time">上次：{{ syncTime(settings.lastChatu8SyncAt) }}</span>
           </div>
           <button class="tlb-btn tlb-btn--accent tlb-btn--sm" :disabled="anySyncing" @click="runSync('chatu8')">
             <Icon :name="syncState.chatu8.busy ? 'loader' : 'download'" :spin="syncState.chatu8.busy" />
@@ -995,8 +995,8 @@ const RESOURCE_LINKS = [
         <div class="tlb-sync-item">
           <div class="tlb-sync-item__meta">
             <b>小白X LittleWhiteBox(NovelDraw)</b>
-            <span class="tlb-hint">画师串、正/负词、缩略预览图、vibe 库与组;读取服务器上的 LittleWhiteBox_NovelDraw.json。</span>
-            <span class="tlb-sync-item__time">上次:{{ syncTime(settings.lastXiaobaiSyncAt) }}</span>
+            <span class="tlb-hint">画师串、正/负词、缩略预览图、vibe 库与组；读取服务器上的 LittleWhiteBox_NovelDraw.json。</span>
+            <span class="tlb-sync-item__time">上次：{{ syncTime(settings.lastXiaobaiSyncAt) }}</span>
           </div>
           <button class="tlb-btn tlb-btn--accent tlb-btn--sm" :disabled="anySyncing" @click="runSync('xiaobaix')">
             <Icon :name="syncState.xiaobaix.busy ? 'loader' : 'download'" :spin="syncState.xiaobaix.busy" />
@@ -1020,7 +1020,7 @@ const RESOURCE_LINKS = [
             横滑按钮
             <span class="tlb-tip" tabindex="0">
               <Icon name="info" />
-              <span class="tlb-tip__body">生成页正面词下方的横滑按钮:按钮显示「标题」(标题留空时显示内容);点选把「内容」插入正面词输入框。</span>
+              <span class="tlb-tip__body">生成页正面词下方的横滑按钮：按钮显示「标题」（标题留空时显示内容）；点选把「内容」插入正面词输入框。</span>
             </span>
           </h3>
           <span class="tlb-grow" />
@@ -1092,7 +1092,7 @@ const RESOURCE_LINKS = [
         <div class="tlb-cfg__divider" />
         <div class="tlb-set__data">
           <div class="tlb-row">
-            <span class="tlb-hint tlb-grow">历史图片 {{ history.items.length }} 张(IndexedDB,不进柏宝绘)</span>
+            <span class="tlb-hint tlb-grow">历史图片 {{ history.items.length }} 张（IndexedDB，不进柏宝绘）</span>
             <button class="tlb-btn tlb-btn--danger tlb-btn--sm" :disabled="!history.items.length" @click="clearAll">清空历史</button>
           </div>
           <div class="tlb-row">

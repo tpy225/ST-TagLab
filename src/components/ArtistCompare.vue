@@ -310,9 +310,9 @@ function onResDragEnd(): void {
           <span class="tlb-lib__tip" tabindex="0">
             <Icon name="info" />
             <span class="tlb-lib__tip-body">
-              <span class="tlb-lib__tip-lead">勾选多位画师,用「生成」页当前正向提示词各出一张,横向并列便于挑选画风。</span>
-              <span><b>① 公平口径:</b>同一轮共用种子,画师串是唯一变量;各预设的质量词/负面词留空时回落全局覆写。</span>
-              <span><b>② 防风控:</b>每张之间随机等待(默认 10–30 秒),可随时停止,切页不丢进度;结果可拖拽调整顺序。</span>
+              <span class="tlb-lib__tip-lead">勾选多位画师，用「生成」页当前正向提示词各出一张，横向并列便于挑选画风。</span>
+              <span><b>① 公平口径：</b>同一轮共用种子，画师串是唯一变量；各预设的质量词/负面词留空时回落全局覆写。</span>
+              <span><b>② 防风控：</b>每张之间随机等待（默认 10–30 秒），可随时停止，切页不丢进度；结果可拖拽调整顺序。</span>
             </span>
           </span>
           <span class="tlb-grow" />
