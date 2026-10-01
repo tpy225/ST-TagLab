@@ -1,0 +1,258 @@
+/*
+ * 基础样式:reset + 通用组件类(tlb-btn / tlb-input / tlb-select / tlb-textarea …)。
+ * 全部只取 --tlb-* 令牌,组件不写死颜色;作用域限定 .tlb-root(shadow root 内的根容器)。
+ */
+
+.tlb-root,
+.tlb-root * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.tlb-root {
+  font-family: var(--tlb-font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--tlb-ink);
+  /* 浮动面板/悬浮球都在这棵树里,自身 fixed 定位;树本身不拦事件 */
+  pointer-events: none;
+}
+
+.tlb-root button,
+.tlb-root input,
+.tlb-root select,
+.tlb-root textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* ---- 按钮 ---- */
+.tlb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--tlb-line-strong);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface);
+  color: var(--tlb-ink);
+  cursor: pointer;
+  transition: background var(--tlb-dur) var(--tlb-ease), border-color var(--tlb-dur) var(--tlb-ease),
+    color var(--tlb-dur) var(--tlb-ease), opacity var(--tlb-dur) var(--tlb-ease);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tlb-btn:hover:not(:disabled) {
+  background: var(--tlb-surface-2);
+  border-color: var(--tlb-accent);
+}
+
+.tlb-btn:focus-visible {
+  outline: 2px solid var(--tlb-accent);
+  outline-offset: 1px;
+}
+
+.tlb-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tlb-btn--accent {
+  background: var(--tlb-accent);
+  border-color: var(--tlb-accent);
+  color: var(--tlb-accent-ink);
+  font-weight: 600;
+}
+
+.tlb-btn--accent:hover:not(:disabled) {
+  filter: brightness(1.08);
+  background: var(--tlb-accent);
+}
+
+.tlb-btn--danger {
+  background: transparent;
+  border-color: var(--tlb-line-strong);
+  color: var(--tlb-danger);
+}
+
+.tlb-btn--danger:hover:not(:disabled) {
+  background: var(--tlb-danger-soft);
+  border-color: var(--tlb-danger);
+}
+
+.tlb-btn--sm {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 12.5px;
+  border-radius: var(--tlb-radius-sm);
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.tlb-btn--ghost {
+  background: var(--tlb-surface-2);
+  border-color: var(--tlb-line);
+  color: var(--tlb-ink-soft);
+}
+
+.tlb-btn--ghost:hover:not(:disabled) {
+  background: var(--tlb-surface-2);
+  border-color: var(--tlb-accent);
+  color: var(--tlb-accent);
+}
+
+/* 无背景无边框的纯符号按钮(输入框标题栏的复制/清空/放大、右上角关闭等) */
+.tlb-btn--bare {
+  background: transparent;
+  border-color: transparent;
+  color: var(--tlb-ink-soft);
+}
+
+.tlb-btn--bare:hover:not(:disabled) {
+  background: transparent;
+  border-color: transparent;
+  color: var(--tlb-accent);
+}
+
+/* 纯符号按钮:正方形、等宽,与输入框/下拉并排 */
+.tlb-btn--icon {
+  flex: none;
+  width: 30px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.tlb-btn--sm.tlb-btn--icon {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+
+/* ---- 表单 ---- */
+.tlb-input,
+.tlb-select,
+.tlb-textarea {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--tlb-line);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface-2);
+  color: var(--tlb-ink);
+  outline: none;
+  transition: border-color var(--tlb-dur) var(--tlb-ease);
+}
+
+.tlb-input:focus,
+.tlb-select:focus,
+.tlb-textarea:focus {
+  border-color: var(--tlb-accent);
+}
+
+.tlb-input:focus-visible,
+.tlb-textarea:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tlb-accent) 35%, transparent);
+  outline-offset: 0;
+}
+
+.tlb-textarea {
+  resize: vertical;
+  min-height: 64px;
+  line-height: 1.5;
+}
+
+/* 数字输入框:与下拉框/符号按钮同高(28px) */
+.tlb-input {
+  height: 28px;
+  padding: 0 10px;
+}
+
+/* 自绘小三角(对齐柏宝绘):去掉原生箭头的大留白,昼夜主题都用中性灰 */
+.tlb-select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 28px; /* 跟随符号按钮(28px)高度 */
+  padding: 0 26px 0 10px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a9099' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9.5 12 15.5 18 9.5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 13px;
+}
+
+.tlb-select:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tlb-accent) 35%, transparent);
+}
+
+/* ---- 排版辅助 ---- */
+.tlb-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--tlb-ink-soft);
+  margin-bottom: 2px;
+}
+
+.tlb-hint {
+  font-size: 12px;
+  color: var(--tlb-ink-muted);
+}
+
+.tlb-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tlb-row--wrap {
+  flex-wrap: wrap;
+}
+
+.tlb-grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.tlb-section {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--tlb-line);
+}
+
+.tlb-section:last-child {
+  border-bottom: none;
+}
+
+.tlb-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tlb-ink);
+  margin-bottom: 10px;
+}
+
+/* ---- 复选框 ---- */
+.tlb-checkbox {
+  appearance: auto;
+  accent-color: var(--tlb-accent);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+/* ---- 滚动条 ----
+ * 全扩展统一:保留滚动能力、不显示滚动条(用户明确要求;Shadow DOM 内不影响酒馆本体)。 */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* 旧 Edge/IE */
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome/Safari */
+}
+
+.tlb-scroll {
+  overflow-y: auto;
+}

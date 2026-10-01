@@ -1,0 +1,84 @@
+/*
+ * 主题令牌 — Tag 实验室
+ * 令牌体系拷自柏宝绘(--bbi-* → --tlb-*),配色口径一致,视觉上同一家;
+ * 默认 'st' 跟随宿主 --SmartTheme* 派生,另备昼/夜两套固定主题。
+ */
+
+.tlb-root {
+  /* —— 字体 —— */
+  --tlb-font-sans: 'MiSans', 'HarmonyOS Sans SC', 'PingFang SC', 'Microsoft YaHei',
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+  --tlb-font-mono: 'SF Mono', 'JetBrains Mono', 'DejaVu Sans Mono', Menlo, Consolas, monospace;
+
+  /* —— 圆角 —— */
+  --tlb-radius-win: 16px;
+  --tlb-radius: 10px;
+  --tlb-radius-sm: 8px;
+  --tlb-radius-pill: 999px;
+
+  /* —— 动效 —— */
+  --tlb-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --tlb-dur: 0.28s;
+}
+
+/* ========== 昼 · 象牙白 ========== */
+.tlb-root[data-theme='day'] {
+  --tlb-bg: oklch(0.97 0.004 90);
+  --tlb-surface: oklch(1 0 0);
+  --tlb-surface-2: oklch(0.945 0.006 90);
+  --tlb-ink: oklch(0.252 0.056 264);
+  --tlb-ink-soft: oklch(0.46 0.04 264);
+  --tlb-ink-muted: oklch(0.62 0.03 264);
+  --tlb-accent: oklch(0.57 0.13 62);
+  --tlb-accent-soft: oklch(0.57 0.13 62 / 0.12);
+  --tlb-accent-ink: oklch(1 0 0);
+  --tlb-line: oklch(0.91 0.005 90);
+  --tlb-line-strong: oklch(0.87 0.006 90);
+  --tlb-danger: oklch(0.52 0.18 25);
+  --tlb-danger-soft: oklch(0.52 0.18 25 / 0.1);
+  --tlb-warning: oklch(0.55 0.1 75);
+  --tlb-overlay: oklch(0.252 0.056 264 / 0.34);
+  --tlb-shadow: 0 18px 48px -20px oklch(0.252 0.056 264 / 0.22),
+    0 4px 12px -6px oklch(0.252 0.056 264 / 0.1);
+}
+
+/* ========== 夜 · 海军黑 ========== */
+.tlb-root[data-theme='night'] {
+  --tlb-bg: #37353E;
+  --tlb-surface: #44444E;
+  --tlb-surface-2: #4E4D58;
+  --tlb-ink: #D3DAD9;
+  --tlb-ink-soft: #B0B5B4;
+  --tlb-ink-muted: #8E9392;
+  --tlb-accent: #76ABAE;
+  --tlb-accent-soft: #76ABAE26;
+  --tlb-accent-ink: #2C3536;
+  --tlb-line: #53525D;
+  --tlb-line-strong: #686774;
+  --tlb-danger: #D96B6B;
+  --tlb-danger-soft: #D96B6B26;
+  --tlb-warning: #D9B358;
+  --tlb-overlay: #1F1E2499;
+  --tlb-shadow: 0 20px 56px -22px #000000A6, 0 4px 14px -8px #00000080;
+}
+
+/* ========== 跟随 ST ========== */
+.tlb-root[data-theme='st'] {
+  --tlb-bg: var(--SmartThemeBlurTintColor, #f6f5f2);
+  --tlb-surface: var(--SmartThemeChatTintColor, #ffffff);
+  --tlb-surface-2: color-mix(in srgb, var(--SmartThemeChatTintColor, #fff) 92%, var(--SmartThemeBodyColor, #000));
+  --tlb-ink: var(--SmartThemeBodyColor, #14213d);
+  --tlb-ink-soft: color-mix(in srgb, var(--SmartThemeBodyColor, #14213d) 72%, var(--SmartThemeBlurTintColor, #f6f5f2));
+  --tlb-ink-muted: color-mix(in srgb, var(--SmartThemeBodyColor, #14213d) 52%, var(--SmartThemeBlurTintColor, #f6f5f2));
+  --tlb-accent: var(--SmartThemeQuoteColor, #718cc1);
+  --tlb-accent-soft: color-mix(in srgb, var(--SmartThemeQuoteColor, #718cc1) 14%, transparent);
+  --tlb-accent-ink: var(--SmartThemeBlurTintColor, #ffffff);
+  --tlb-line: var(--SmartThemeBorderColor, #cfbcbc);
+  --tlb-line-strong: color-mix(in srgb, var(--SmartThemeBorderColor, #cfbcbc) 70%, var(--SmartThemeBodyColor, #000));
+  --tlb-danger: #d96b6b;
+  --tlb-danger-soft: #d96b6b26;
+  --tlb-warning: #d9a441;
+  --tlb-overlay: #00000073;
+  --tlb-shadow: 0 18px 48px -20px var(--SmartThemeShadowColor, #00000038),
+    0 4px 12px -6px var(--SmartThemeShadowColor, #0000001a);
+}
