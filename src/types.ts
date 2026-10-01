@@ -152,6 +152,8 @@ export interface TlbSettings {
   vibeGroups: TlbVibeGroup[];
   /** 快捷输入条目(生成页 chip 显示标题、点击插入内容)。 */
   quickTags: TlbQuickTag[];
+  /** 水印樣式庫。 */
+  watermarkPresets: TlbWatermarkPreset[];
   /** 当前画师串 id;空串 = 不使用。 */
   activeArtistId: string;
   /** 拼接次序:画师串是否放在提示词前(默认是)。 */
@@ -168,6 +170,36 @@ export interface TlbSettings {
   lastXiaobaiSyncAt: number;
   /** 画师库批量对比:每张图之间的随机等待秒数范围(防风控,0–60)。 */
   compareInterval: { minSec: number; maxSec: number };
+}
+
+/** 水印配置(全部相對值,跨解析度套用)。 */
+export interface TlbWatermarkConfig {
+  text: string;
+  /** 字級:佔圖片短邊的百分比。 */
+  fontPct: number;
+  color: string;
+  /** 0–1。 */
+  opacity: number;
+  /** 旋轉角度(平鋪用)。 */
+  rotation: number;
+  mode: 'tile' | 'single' | 'sticker';
+  /** 平鋪間距倍數(相對於文字寬/字高)。 */
+  gapMul: number;
+  /** 單個/貼紙位置:1–9(由左上列序)。 */
+  position: number;
+  /** 邊距:佔短邊百分比。 */
+  marginPct: number;
+  /** 貼紙 PNG 的 data URL(與樣式一起存 localStorage)。 */
+  stickerDataUrl?: string;
+  /** 貼紙寬度:佔短邊百分比。 */
+  stickerSizePct?: number;
+}
+
+/** 一條已保存水印樣式。 */
+export interface TlbWatermarkPreset {
+  id: string;
+  name: string;
+  config: TlbWatermarkConfig;
 }
 
 /** 一条历史记录元数据(IndexedDB 'meta' store;Blob 在 'blobs' store)。 */

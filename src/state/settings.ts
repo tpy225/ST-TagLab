@@ -86,6 +86,7 @@ export function defaultSettings(): TlbSettings {
     artistPresets: [],
     vibeGroups: [],
     quickTags: [...DEFAULT_QUICK_TAGS],
+    watermarkPresets: [],
     activeArtistId: '',
     artistFirst: true,
     qualityLast: true,
@@ -125,6 +126,7 @@ function normalize(s: TlbSettings): TlbSettings {
   if (!Array.isArray(out.vibeGroups)) out.vibeGroups = [];
   if (!out.artistPresets.some(a => a.id === out.activeArtistId)) out.activeArtistId = '';
   out.quickTags = normalizeQuickTags(s.quickTags as unknown);
+  out.watermarkPresets = Array.isArray(out.watermarkPresets) ? out.watermarkPresets : [];
   out.compareInterval = normalizeCompareInterval(s.compareInterval as unknown);
   return out;
 }

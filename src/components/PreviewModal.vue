@@ -6,7 +6,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { currentItem, history, removeHistory, stepSelection, allImageTags, parseTags, setImageTag, addImageTags } from '@/state/historyList';
-import { imageUrl, openPanel, ui } from '@/state/ui';
+import { imageUrl, openPanel, ui, cachedImage } from '@/state/ui';
 import { notify } from '@/st/toast';
 import Icon from '@/components/Icon.vue';
 
@@ -100,6 +100,7 @@ watch(
   () => ui.currentId,
   async id => {
     url.value = id ? await imageUrl(id) : null;
+    if (id) void cachedImage(id); // 预热解码缓存,进水印工坊免重载
   },
   { immediate: true },
 );
@@ -145,6 +146,15 @@ function reuseForGenerate(): void {
   ui.previewOpen = false;
   ui.backfillNonce += 1;
   openPanel('gen');
+}
+
+/** 開水印工坊。 */
+function openWatermark(): void {
+  const meta = item.value;
+  if (!meta) return;
+  ui.previewOpen = false;
+  ui.watermarkStudio.ids = [meta.id];
+  ui.watermarkStudio.open = true;
 }
 
 function timeOf(ts: number): string {
@@ -246,7 +256,7 @@ async function submitTagInput(): Promise<void> {
             </template>
           </div>
 
-          <button class="tlb-btn tlb-btn--sm" disabled title="即将推出(M5)">
+          <button class="tlb-btn tlb-btn--sm" @click="openWatermark">
             <Icon name="stamp" /> 水印工坊
           </button>
           <button class="tlb-btn tlb-btn--sm tlb-btn--accent" @click="reuseForGenerate">

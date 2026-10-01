@@ -181,7 +181,6 @@ function timeOf(ts: number): string {
 }
 
 /* ══════════════ 批量标签 ══════════════ */
-
 const tagPopOpen = ref(false);
 const tagInput = ref('');
 
@@ -213,6 +212,13 @@ async function submitBatchTags(): Promise<void> {
   await batchAddTags(selected.value, tags);
   tagInput.value = '';
   notify('success', `已加到 ${selected.value.length} 张图片`);
+}
+
+/** 開水印工坊,帶入目前選取。 */
+function openBatchWatermark(): void {
+  if (!selected.value.length) return;
+  ui.watermarkStudio.ids = [...selected.value];
+  ui.watermarkStudio.open = true;
 }
 </script>
 
@@ -291,6 +297,10 @@ async function submitBatchTags(): Promise<void> {
             </div>
           </template>
         </div>
+
+        <button class="tlb-btn tlb-btn--sm" :disabled="!selected.length" @click="openBatchWatermark">
+          <Icon name="stamp" /> 水印工坊
+        </button>
 
         <div class="tlb-gal__confirm-wrap">
           <button class="tlb-btn tlb-btn--sm tlb-btn--danger" :disabled="!selected.length" @click="askBatchDelete">

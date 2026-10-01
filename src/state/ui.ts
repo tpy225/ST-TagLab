@@ -22,6 +22,11 @@ export const ui = reactive({
     open: false,
     ids: [] as string[],
   },
+  /** 水印工坊弹窗:打开时携带目标历史 id 列表。 */
+  watermarkStudio: {
+    open: false,
+    ids: [] as string[],
+  },
 });
 
 /** 正向提示词草稿(生成页正文;Bot「填 tag」跨页写入,故提为共享状态)。 */
@@ -67,6 +72,30 @@ export function revokeImageUrl(id: string): void {
     URL.revokeObjectURL(url);
     urlCache.delete(id);
   }
+  imgCache.delete(id);
+}
+
+/* ---- 已解码 HTMLImageElement 缓存(id → Promise):跨弹窗复用,避免重新加载/解码 ---- */
+
+const imgCache = new Map<string, Promise<HTMLImageElement>>();
+
+/** 取已解码图片(同一 id 全会话共享;删图时随 url 缓存一起清)。 */
+export function cachedImage(id: string): Promise<HTMLImageElement> {
+  const hit = imgCache.get(id);
+  if (hit) return hit;
+  const p = (async () => {
+    const url = await imageUrl(id);
+    if (!url) throw new Error('图片读取失败');
+    return new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('图片解码失败'));
+      img.src = url;
+    });
+  })();
+  imgCache.set(id, p);
+  p.catch(() => imgCache.delete(id));
+  return p;
 }
 
 /** 清空本会话全部图片 Object URL 缓存(设置页「清理缓存」)。 */
@@ -74,6 +103,7 @@ export function clearImageUrlCache(): number {
   const n = urlCache.size;
   for (const url of urlCache.values()) URL.revokeObjectURL(url);
   urlCache.clear();
+  imgCache.clear();
   return n;
 }
 

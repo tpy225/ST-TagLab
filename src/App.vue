@@ -12,6 +12,7 @@ import GalleryPanel from '@/components/GalleryPanel.vue';
 import GenPanel from '@/components/GenPanel.vue';
 import PreviewModal from '@/components/PreviewModal.vue';
 import SettingsPanel from '@/components/SettingsPanel.vue';
+import WatermarkStudio from '@/components/WatermarkStudio.vue';
 import { loadHistory } from '@/state/historyList';
 import { loadVibes } from '@/state/vibeList';
 import { loadArtistPreviews } from '@/state/artistPreviews';
@@ -82,9 +83,9 @@ onMounted(() => {
 watch(theme, () => void nextTick(syncOpaqueTokens), { flush: 'post' });
 // 宿主主题变量可能晚于本组件就绪/外部随时切换:每次打开预览前再算一次
 watch(
-  () => ui.previewOpen,
-  open => {
-    if (open) void nextTick(syncOpaqueTokens);
+  [() => ui.previewOpen, () => ui.watermarkStudio.open],
+  opens => {
+    if (opens.some(Boolean)) void nextTick(syncOpaqueTokens);
   },
   { flush: 'post' },
 );
@@ -100,5 +101,6 @@ watch(
     </FloatingPanel>
     <PreviewModal v-if="ui.previewOpen" />
     <GalleryCompareModal />
+    <WatermarkStudio v-if="ui.watermarkStudio.open" />
   </div>
 </template>
