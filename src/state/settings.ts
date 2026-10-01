@@ -34,18 +34,71 @@ export function officialEndpoint(): TlbNaiEndpoint {
   return { id: OFFICIAL_ENDPOINT_ID, name: 'NovelAI 官方', url: NAI_OFFICIAL_URL, key: '' };
 }
 
-const DEFAULT_BOT_SYSTEM_PROMPT =
+/** 简短版内置提示词(旧默认,保留可切换)。 */
+const SHORT_BOT_SYSTEM_PROMPT =
   '你是 Tag 实验室的提示词助手。用户会用自然语言描述想要的画面,你用 NovelAI / Stable Diffusion 的标签(tag)风格回答。要求:只输出英文 tag,用英文逗号分隔;不要写句子、不要解释、不要 Markdown 代码块、不要序号。';
+
+/** 默认详细版提示词。 */
+const DEFAULT_BOT_SYSTEM_PROMPT = `你是一名 AI 生图提示词助手。你的任务是把用户的中文或英文自然语言需求,整理成适合 NovelAI 插画生成的英文逗号分隔标签。
+
+【工作原则】
+
+1. 先确定画面核心
+- 找出用户最想表现的主体:人物、动作、情绪、物件或场景。
+- 保留用户明确指定的事实,不擅自增加人物、道具、剧情或环境细节。
+- 用户没有指定的摄影语言,可以为画面表现力适度补全。
+
+2. 选择构图
+- 每张图只选一个主要景别,例如 close-up、upper body、full body 或 wide shot。
+- 根据表现重点选一个主要视角或构图方式;必要时再加一个焦点或光影标签,不堆砌镜头词。
+- 情绪和面部细节适合近景;服装、姿势和角色设定适合全身;环境叙事适合远景。
+- 确保景别能容纳用户要求的内容:例如 upper body 不应同时要求鞋子清晰入镜。
+- 背面视角、遮挡、闭眼等条件下,不添加看不见的面部、眼睛或身体细节。
+
+3. 编写正向标签
+- 正向 Prompt 只使用简短英文标签或必要的简短英文视觉短语,以英文半角逗号和空格分隔;不要写完整的叙事句子。
+- 优先使用常见、明确、可见的标签,不自造冗长抽象词组。
+- 推荐顺序:画质与媒介 → 人数与主体 → 外貌与表情 → 服装与配饰 → 姿势与动作 → 构图与视角 → 场景与光影 → 风格。
+- 同一组相关信息尽量放在一起;排序服从画面重点,不为套用模板而打散主体和动作。
+- 不重复近义词,不用大量通用画质词挤占真正重要的视觉信息。
+- 对多人画面,明确人数及必要的相对位置;无法用零散标签清楚表达的关系,可以使用简短英文视觉短语。
+- 只描述画面中可见的静态瞬间,不同时安排互相冲突的动作或姿势。
+- 输出标签总数控制在 40 个以内,最重要的标签放最前。
+
+4. 控制权重
+- 默认不加权。只有用户明确强调、且普通排序不足以突出某个要素时,才少量使用 NovelAI 的 {tag} 或 {{tag}}。
+- 需要弱化时可使用 [tag];不要使用 WebUI 的 (tag:1.5) 写法。
+- 不要机械地给每个标签加权,也不要声称标签排序或加权能保证生成结果。
+
+5. 处理特殊用途
+- 角色立绘:优先确保人物完整、服装可见、背景简洁;按需求选择 full body、standing、simple background 等。只有用户要设定展示板时才加入 character sheet。
+- Q版贴纸:优先考虑 chibi、简洁轮廓与易抠图背景(white background、simple background);不要依赖 transparent background 标签保证透明效果。
+- 剧情 CG:重视人物互动、镜头、环境和光影,但只加入与用户描述相符的场景细节。
+- 特定风格:把用户说的风格拆解为可见特征,例如配色、线条、材质或光影;避免堆砌互相冲突的风格词。
+- 无人物需求:以物件或环境为主体,不强行加入 1girl、1boy 等人物标签。
+
+6. 输出前检查
+- 人数、视角、景别、动作和可见部位是否一致?
+- 是否把用户没说过的物件或剧情当成既定事实?
+- 是否有重复、矛盾或无助于画面的标签?
+- 正向 Prompt 是否可以直接复制使用?
+
+要求:只输出英文 tag,用英文逗号分隔;不要写句子、不要解释、不要 Markdown 代码块、不要序号。`;
 
 export const DEFAULT_BOT_PROFILE_ID = 'bot_default';
 export const DEFAULT_BOT_PROMPT_ID = 'bot_prompt_default';
+export const SHORT_BOT_PROMPT_ID = 'bot_prompt_short';
 
 export function defaultBotPrompt(over: Partial<TlbBotPrompt> = {}): TlbBotPrompt {
-  return { id: DEFAULT_BOT_PROMPT_ID, name: '默认提示词', content: DEFAULT_BOT_SYSTEM_PROMPT, ...over };
+  return { id: DEFAULT_BOT_PROMPT_ID, name: '預設（詳細）', content: DEFAULT_BOT_SYSTEM_PROMPT, ...over };
+}
+
+export function shortBotPrompt(over: Partial<TlbBotPrompt> = {}): TlbBotPrompt {
+  return { id: SHORT_BOT_PROMPT_ID, name: '預設（簡短）', content: SHORT_BOT_SYSTEM_PROMPT, ...over };
 }
 
 export function defaultBotProfile(over: Partial<TlbBotProfile> = {}): TlbBotProfile {
-  const prompts = over.prompts?.length ? over.prompts : [defaultBotPrompt()];
+  const prompts = over.prompts?.length ? over.prompts : [defaultBotPrompt(), shortBotPrompt()];
   return {
     id: DEFAULT_BOT_PROFILE_ID,
     name: '默认配置',
@@ -143,6 +196,22 @@ function normalizeCompareInterval(raw: unknown): { minSec: number; maxSec: numbe
 }
 
 /**
+ * 内置提示词迁移:
+ * - 旧版默认(简短)存在默认 id 上 → 升级为详细版;
+ * - profile.systemPrompt 若仍是旧简短默认 → 同步升级;
+ * - 列表中没有简短版 → 补上(保留可切换)。自定义内容一律不动。
+ */
+function migrateBuiltinPrompts(p: TlbBotProfile): TlbBotProfile {
+  const def = p.prompts.find(x => x.id === DEFAULT_BOT_PROMPT_ID);
+  if (def && def.content === SHORT_BOT_SYSTEM_PROMPT) def.content = DEFAULT_BOT_SYSTEM_PROMPT;
+  if (p.systemPrompt === SHORT_BOT_SYSTEM_PROMPT) p.systemPrompt = DEFAULT_BOT_SYSTEM_PROMPT;
+  if (!p.prompts.some(x => x.content === SHORT_BOT_SYSTEM_PROMPT)) {
+    p.prompts.push(shortBotPrompt());
+  }
+  return p;
+}
+
+/**
  * Bot 配置归一:
  * - 旧版(单条 baseUrl/key/model/systemPrompt)迁移成一个配置档;
  * - 新版补字段、保证至少一档且 activeId 有效。
@@ -158,16 +227,18 @@ function normalizeBot(raw: (Partial<TlbSettings['bot']> & Record<string, unknown
           ? src.systemPrompt
           : DEFAULT_BOT_SYSTEM_PROMPT;
         const prompts = normalizeBotPrompts(src.prompts, systemPrompt);
-        return defaultBotProfile({
-          ...src,
-          id,
-          name: typeof src.name === 'string' && src.name.trim() ? src.name : `配置 ${i + 1}`,
-          provider: typeof src.provider === 'string' && src.provider ? src.provider : 'custom',
-          models: Array.isArray(src.models) ? src.models.filter((m): m is string => typeof m === 'string') : [],
-          systemPrompt,
-          prompts,
-          activePromptId: prompts.some(x => x.id === src.activePromptId) ? (src.activePromptId as string) : prompts[0].id,
-        });
+        return migrateBuiltinPrompts(
+          defaultBotProfile({
+            ...src,
+            id,
+            name: typeof src.name === 'string' && src.name.trim() ? src.name : `配置 ${i + 1}`,
+            provider: typeof src.provider === 'string' && src.provider ? src.provider : 'custom',
+            models: Array.isArray(src.models) ? src.models.filter((m): m is string => typeof m === 'string') : [],
+            systemPrompt,
+            prompts,
+            activePromptId: prompts.some(x => x.id === src.activePromptId) ? (src.activePromptId as string) : prompts[0].id,
+          }),
+        );
       })
       .filter((p): p is TlbBotProfile => p !== null);
     if (profiles.length) {
@@ -181,15 +252,17 @@ function normalizeBot(raw: (Partial<TlbSettings['bot']> & Record<string, unknown
     const systemPrompt = typeof raw.systemPrompt === 'string' && raw.systemPrompt
       ? raw.systemPrompt
       : DEFAULT_BOT_SYSTEM_PROMPT;
-    const p = defaultBotProfile({
-      name: '默认配置',
-      baseUrl: typeof raw.baseUrl === 'string' ? raw.baseUrl : defaultBotProfile().baseUrl,
-      key: typeof raw.key === 'string' ? raw.key : '',
-      model: typeof raw.model === 'string' && raw.model ? raw.model : defaultBotProfile().model,
-      systemPrompt,
-      prompts: [defaultBotPrompt({ content: systemPrompt })],
-      activePromptId: DEFAULT_BOT_PROMPT_ID,
-    });
+    const p = migrateBuiltinPrompts(
+      defaultBotProfile({
+        name: '默认配置',
+        baseUrl: typeof raw.baseUrl === 'string' ? raw.baseUrl : defaultBotProfile().baseUrl,
+        key: typeof raw.key === 'string' ? raw.key : '',
+        model: typeof raw.model === 'string' && raw.model ? raw.model : defaultBotProfile().model,
+        systemPrompt,
+        prompts: [defaultBotPrompt({ content: systemPrompt })],
+        activePromptId: DEFAULT_BOT_PROMPT_ID,
+      }),
+    );
     return { profiles: [p], activeProfileId: p.id };
   }
   return { profiles: [defaultBotProfile()], activeProfileId: DEFAULT_BOT_PROFILE_ID };
