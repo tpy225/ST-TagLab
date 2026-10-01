@@ -111,7 +111,7 @@ function normalize(s: TlbSettings): TlbSettings {
   if (!Array.isArray(out.nai.endpoints) || out.nai.endpoints.length === 0) {
     out.nai.endpoints = [officialEndpoint()];
   }
-  // 官方接入点恒在、url 恒正(与柏宝绘同口径)
+  // 官方接入点恒在、url 恒正
   if (!out.nai.endpoints.some(e => e.id === OFFICIAL_ENDPOINT_ID)) {
     out.nai.endpoints.unshift(officialEndpoint());
   } else {

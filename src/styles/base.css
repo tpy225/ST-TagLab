@@ -203,7 +203,7 @@
   padding: 0 10px;
 }
 
-/* 自绘小三角(对齐柏宝绘):去掉原生箭头的大留白,昼夜主题都用中性灰 */
+/* 自绘小三角:去掉原生箭头的大留白,昼夜主题都用中性灰 */
 .tlb-select {
   cursor: pointer;
   appearance: none;

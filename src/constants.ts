@@ -1,6 +1,6 @@
 /**
- * NAI 常量表 —— 与 st-chatu8 / NAI 官方前端同口径的公开知识,
- * 质量词/负面词按模型区分(与柏宝绘 backends/nai.ts 同一份词表)。
+ * NAI 常量表 —— 公开知识口径,
+ * 质量词/负面词按模型区分。
  */
 
 export const NAI_OFFICIAL_URL = 'https://image.novelai.net';
@@ -148,10 +148,10 @@ export const NAI_MIN_INTERVAL_MS = 1500;
 
 /* ============ Vibe Transfer ============ */
 
-/** 官方 .naiv4vibe 里 encoding 的固定内层 key(与 NovelAI / st-chatu8 同)。 */
+/** 官方 .naiv4vibe 里 encoding 的固定内层 key。 */
 export const VIBE_ENCODING_KEY = 'b36a8472fe418d9f80d6bb1c54e3a6e62c62936aa7bf31dae2bcf7e929f6430f';
 
-/** Vibe 文件里合法的模型 key(官方 .naiv4vibe / 小白X 共用)。 */
+/** Vibe 文件里合法的模型 key。 */
 export const VIBE_MODEL_KEYS = [
   'v5curated',
   'v5full',
@@ -175,7 +175,7 @@ export function vibeModelKey(model: string): string {
 }
 
 /**
- * Vibe 本地编码支持的模型 key(对齐小白X getVibeModelKeyLocal):
+ * Vibe 本地编码支持的模型 key:
  * 只有 NAI V4 / V4.5 能调 encode-vibe;V5 / V3 / 其他 → null(UI 显示「模型不支持」)。
  * 编码数据本身仍可能含 v5/v3 key(随文件导入)。
  */

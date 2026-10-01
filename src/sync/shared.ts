@@ -1,13 +1,12 @@
 /**
- * 三向同步共用管线(柏宝绘 / 智绘姬 / 小白X → Tag 实验室)。
+ * 同步共用管线(外部插件 → Tag 实验室)。
  *
  * 各来源适配器只负责把对方的数据读出来、规整成统一的 SyncPayload(画师串 / vibe / 组),
- * 合并语义全部收口在 applySyncPayload,保证三家口径一致:
+ * 合并语义全部收口在 applySyncPayload,保证各来源口径一致:
  *
- * - 画师串:按 **name** 重名覆盖(保留画板内部 id,历史记录引用不断);柏宝绘 id 体系与
+ * - 画师串:按 **name** 重名覆盖(保留画板内部 id,历史记录引用不断);部分来源 id 体系与
  *   画板互通,名称对不上时再用来源 id 兜底。幂等:重复点 = 同名再覆盖一次。
- * - 预览图:来源带预览图就覆盖/补载,来源没有则保留画板已有(先同步智绘姬、再同步小白X
- *   时,小白X 独有的预览图被补进来;智绘姬不会把它抹掉)。存 IndexedDB,不进 localStorage。
+ * - 预览图:来源带预览图就覆盖/补载,来源没有则保留画板已有。存 IndexedDB,不进 localStorage。
  * - vibe:按 encodings 指纹去重;已存在则只补缺的模型编码/原图/缩略图,不重复入库;
  *   新导入的 vibe 一律 **不启用**(避免同步后立即改变出图),用户手动套用组才生效。
  * - 组:按组名聚合,跨来源取并集(同成员以来源的勾选/强度为准)。
@@ -29,11 +28,11 @@ export interface IncomingArtist {
   negative: string;
   /** 原始预览图(dataURL 或同源可加载 URL;空串 = 该来源无预览图)。引擎统一压成 256 jpeg。 */
   preview: string;
-  /** 来源插件内的稳定 id(柏宝绘 art_ 或 bi_ 前缀);名称对不上时按 id 兜底匹配。 */
+  /** 来源插件内的稳定 id;名称对不上时按 id 兜底匹配。 */
   sourceId?: string;
   /**
-   * 来源 id 与画板 id 体系互通(仅柏宝绘):新建条目时直接沿用 sourceId 作为画板内部 id,
-   * 保证内置 bi_ 预设与活动选中回连一致。其余来源为外部 id,不可沿用。
+   * 来源 id 与画板 id 体系互通:新建条目时直接沿用 sourceId 作为画板内部 id。
+   * 其余来源为外部 id,不可沿用。
    */
   trustSourceId?: boolean;
 }
@@ -156,7 +155,7 @@ async function fetchWithTimeout(path: string): Promise<Response | null> {
   }
 }
 
-/** 取服务器文本:按 data: / JSON / 裸 base64 尝试解码(与智绘姬 getConfigText 同口径)。 */
+/** 取服务器文本:按 data: / JSON / 裸 base64 尝试解码。 */
 export async function fetchServerText(path: string): Promise<string | null> {
   const resp = await fetchWithTimeout(path);
   if (!resp) return null;
@@ -244,7 +243,7 @@ export interface ParsedNaivVibe {
   strength: number;
 }
 
-/** 解析官方 .naiv4vibe JSON 文本(与 NovelAI / 智绘姬 / 柏宝绘 同格式)。 */
+/** 解析官方 .naiv4vibe JSON 文本。 */
 export function parseNaiv4vibe(text: string): ParsedNaivVibe {
   let json: {
     identifier?: unknown;
@@ -286,7 +285,7 @@ export function parseNaiv4vibe(text: string): ParsedNaivVibe {
   };
 }
 
-/** vibe 去重指纹:模型 key 排序后取各编码前 64 字符(与柏宝绘 vibeFingerprint 同口径)。 */
+/** vibe 去重指纹:模型 key 排序后取各编码前 64 字符。 */
 export function vibeFingerprint(encodings: TlbVibeEncodings): string {
   return Object.keys(encodings)
     .sort()

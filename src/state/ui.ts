@@ -120,7 +120,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 
 /**
  * 读本地图片文件并按最长边等比缩小,返回 dataURL。
- * 原图档:maxDim 1024 / image/jpeg / 0.9;缩略图:256 / 0.8(与小白X 同口径)。
+ * 原图档:maxDim 1024 / image/jpeg / 0.9;缩略图:256 / 0.8。
  */
 export async function downscaleFileToDataUrl(
   file: File,

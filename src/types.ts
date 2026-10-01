@@ -3,11 +3,11 @@
  *
  * 存储分层:
  * - 设置(localStorage 'tlb_settings'):NAI 连接/参数、画师串库、Bot 配置、界面偏好,
- *   全部自管,不进 SillyTavern extension_settings,不与柏宝绘互相覆盖。
+ *   全部自管,不进 SillyTavern extension_settings。
  * - 历史(IndexedDB 'st-taglab'):图片 Blob 与元数据(含收藏标记)。
  */
 
-/** 一条画师串配方(与柏宝绘 NaiArtistPreset 同构,便于同步导入)。 */
+/** 一条画师串配方。 */
 export interface TlbArtistPreset {
   id: string;
   /** 显示名;允许重名,以 id 为键。 */
@@ -121,7 +121,7 @@ export interface TlbBot {
 
 export type TlbTheme = 'st' | 'day' | 'night';
 
-/** NAI 连接与出图参数(画板自管的一份,从柏宝绘手动同步而来之后独立演化)。 */
+/** NAI 连接与出图参数(画板自管)。 */
 export interface TlbNai {
   endpoints: TlbNaiEndpoint[];
   activeEndpointId: string;
@@ -162,11 +162,9 @@ export interface TlbSettings {
   qualityLast: boolean;
   /** 浮动面板上次位置(px);null = 默认居中。 */
   panelPos: { x: number; y: number } | null;
-  /** 最近一次从柏宝绘同步的时间戳;0 = 从未同步。 */
+  /** 各来源最近一次同步时间戳;0 = 从未同步。 */
   lastBaibaiSyncAt: number;
-  /** 最近一次从智绘姬(st-chatu8)同步的时间戳;0 = 从未同步。 */
   lastChatu8SyncAt: number;
-  /** 最近一次从小白X(LittleWhiteBox NovelDraw)同步的时间戳;0 = 从未同步。 */
   lastXiaobaiSyncAt: number;
   /** 画师库批量对比:每张图之间的随机等待秒数范围(防风控,0–60)。 */
   compareInterval: { minSec: number; maxSec: number };

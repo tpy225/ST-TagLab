@@ -5,9 +5,9 @@
  * - 画师串:yushe: { [预设名]: { fixedPrompt, fixedPrompt_end, negativePrompt, previewImageId? } },
  *   当前选中 yusheid_novelai(预设名)。
  *   映射:fixedPrompt→画师串 prompt;fixedPrompt_end→正面质量词 quality;negativePrompt→负面词。
- *   智绘姬生成口径是「预设negativePrompt + 官方 UC 基线」一并发出,而画板的 negative 字段是
- *   **完整**负面 caption(直接发给 NovelAI),故同步时按智绘姬自己的 novelaimode + UCP_novelai
- *   复刻其官方 UC 基线烤在用户负向前(见 chatu8Baseline)。用户负向留空则整段留空走回落链。
+ *   该来源生成口径是「预设negativePrompt + 官方 UC 基线」一并发出,而画板的 negative 字段是
+ *   **完整**负面 caption(直接发给 NovelAI),故同步时按来源自己的 novelaimode + UCP_novelai
+ *   把官方 UC 基线烤在用户负向前(见 chatu8Baseline)。用户负向留空则整段留空走回落链。
  * - 预览图:预设只存 previewImageId;图片在 configImageStorage[id].path(服务器,可直接 fetch)
  *   或 IndexedDB「chatu8_config_images / config_images」(记录 {id,data,mimeType...})。
  * - vibe:vibePresets {名:{vibeDataId,strength}} 与 vibeGroups {组名:{vibes:[{vibeDataId,strength}]}},
@@ -136,11 +136,10 @@ interface RawGroup {
 }
 
 /**
- * 复刻智绘姬 getNovelAIQualityPresetsText 的 UC 分支(index.js)。智绘姬生成时
- * 负面 = [预设negativePrompt, 角色UC, 这段官方基线].join(", ")。画板 negative 存的是
- * 完整 caption(直接发给 NovelAI),所以必须把这段基线一起烤进去,否则同步过来的预设
- * 会缺掉官方 UC、出图对不上。用智绘姬自己的 novelaimode + UCP_novelai 判定(而非画板模型默认),
- * 才和用户在智绘姬里选的变体(Heavy/Light/Human Focus/Furry Focus)完全一致。
+ * 来源的官方 UC 基线:生成时负面 = [预设negativePrompt, 角色UC, 官方基线].join(", ")。
+ * 画板 negative 存的是完整 caption(直接发给 NovelAI),所以必须把这段基线一起烤进去,
+ * 否则同步过来的预设会缺掉官方 UC、出图对不上。按来源自己的 novelaimode + UCP_novelai
+ * 判定(而非画板模型默认),与用户在来源里选的变体(Heavy/Light/Human Focus/Furry Focus)一致。
  * 判定不出时回落画板模型默认 UC,避免同步过来连基线都没有。
  */
 function chatu8Baseline(root: Record<string, unknown>): string {
@@ -184,7 +183,7 @@ function chatu8Baseline(root: Record<string, unknown>): string {
     return 'lowres, artistic error, film grain, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, chromatic aberration, dithering, halftone, screentone, multiple views, logo, too many watermarks, negative space, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy';
   if (mode.startsWith('nai-diffusion-5') && U('furryFocus'))
     return '{worst quality}, distracting watermark, unfinished, bad quality, {widescreen}, upscale, {sequence}, {{grandfathered content}}, blurred foreground, chromatic aberration, sketch, everyone, [sketch background], simple, [flat colors], ych (character), outline, multiple scenes, [[horror (theme)]], comic';
-  // 智绘姬里没匹配上(UCP 变体在这模型下不存在等) → 回落画板模型默认 UC
+  // 来源里没匹配上(UCP 变体在这模型下不存在等) → 回落画板模型默认 UC
   return naiDefaultUndesired(str(root.novelaimode) || settings.nai.model);
 }
 

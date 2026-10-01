@@ -1,10 +1,10 @@
 /**
  * Tag 实验室 · 入口
  *
- * 与柏宝绘同构的挂载方式:host 元素留 ST 的 light DOM,Vue 应用整体活在
+ * 挂载方式:host 元素留 ST 的 light DOM,Vue 应用整体活在
  * 它的 shadow root 里;dist/index.css 以 <link> 注入 shadow root,样式双向隔离。
  * 设置存 localStorage('tlb_settings'),不依赖 ST 的 extension_settings
- * (唯一接触点是「从柏宝绘同步」按钮,按需读)。
+ * (唯一接触点是同步功能,按需读)。
  */
 import App from '@/App.vue';
 import { injectMenuButton } from '@/menu';

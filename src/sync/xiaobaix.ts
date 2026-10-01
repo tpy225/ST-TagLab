@@ -8,8 +8,8 @@
  * - settings.paramsPresets[] { name, thumbnail(dataURL), positivePrefix, negativePrefix, vibe, params }
  *   · positivePrefix → 画师串 prompt(拼在场景前,与画师串同位);
  *   · 小白X 没有独立「正面质量词」字段(质量词靠 params.qualityToggle 的官方词)→ quality 留空;
- *   · negativePrefix → negative **原样搬**。小白X 默认 ucPreset=0,负面 caption 就是 negativePrefix
- *     本身、不含官方基线(与智绘姬「官方 UC + 用户负向」不同,故这里不烤基线,烤了反而多出一堆词);
+ *   · negativePrefix → negative **原样搬**。该来源默认 ucPreset=0,负面 caption 就是 negativePrefix
+ *     本身、不含官方基线,故这里不烤基线,烤了反而多出一堆词;
  *   · thumbnail 是内联 dataURL,直接作画板预览图。
  * - settings.vibeLibrary.singles[] { id,name,image,thumbnail,infoExtracted,encodings:{key: 裸base64} }
  *   encodings 的值是裸字符串,包成 { encoding, infoExtracted }。
@@ -108,7 +108,7 @@ function parseVibes(s: Record<string, unknown>): IncomingVibe[] {
     }
     const image = stripDataUrlPrefix(v.image);
     const thumbnail = ensureDataUrl(v.thumbnail || v.image);
-    // 与小白X 同口径:图和编码至少有一个才算有效条目
+    // 有效条目判定:图和编码至少有一个
     if (!image && !Object.keys(encodings).length) continue;
     out.push({
       sourceId: id,
