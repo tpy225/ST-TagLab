@@ -200,6 +200,8 @@ export interface TlbHistoryMeta {
   createdAt: number;
   /** 是否收藏;画廊「只看收藏」据此过滤。 */
   favorite: boolean;
+  /** 用户自订标签(自由文本;标签库由全部历史自动汇整)。 */
+  tags?: string[];
   /** 小缩略图 dataURL(画廊网格用;缺省为空,旧记录回落读全图)。 */
   thumb?: string;
 }

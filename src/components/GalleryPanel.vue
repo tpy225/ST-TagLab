@@ -12,7 +12,7 @@
  */
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
-import { history, loadHistory, removeHistory, wipeHistory } from '@/state/historyList';
+import { history, loadHistory, removeHistory, wipeHistory, allImageTags, batchAddTags, batchToggleTag, parseTags } from '@/state/historyList';
 import { imageUrl, ui } from '@/state/ui';
 import { notify } from '@/st/toast';
 import Icon from '@/components/Icon.vue';
@@ -27,7 +27,19 @@ const mode = ref<GalMode>('view');
 const selected = ref<string[]>([]);
 
 /** 列表。 */
-const shown = computed(() => history.items);
+const tagQuery = ref('');
+
+const shown = computed(() => {
+  const q = tagQuery.value.trim().toLowerCase();
+  if (!q) return history.items;
+  return history.items.filter(i => (i.tags ?? []).some(t => t.toLowerCase().includes(q)));
+});
+
+/* 查询变化后,剔除不可见的已选项,避免批量操作误处理隐藏图 */
+watch(shown, items => {
+  const ids = new Set(items.map(i => i.id));
+  selected.value = selected.value.filter(id => ids.has(id));
+});
 
 const picking = computed(() => mode.value !== 'view');
 const isSelected = (id: string): boolean => selected.value.includes(id);
@@ -56,12 +68,14 @@ function enterMode(next: GalMode): void {
   mode.value = next;
   selected.value = [];
   confirmDeleteOpen.value = false;
+  tagPopOpen.value = false;
 }
 
 function exitMode(): void {
   mode.value = 'view';
   selected.value = [];
   confirmDeleteOpen.value = false;
+  tagPopOpen.value = false;
 }
 
 /* ══════════════ 点单元格 ══════════════ */
@@ -165,6 +179,41 @@ function timeOf(ts: number): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
+
+/* ══════════════ 批量标签 ══════════════ */
+
+const tagPopOpen = ref(false);
+const tagInput = ref('');
+
+const selectedItems = computed(() => shown.value.filter(i => selected.value.includes(i.id)));
+
+/** 选中项全部都有的标签。 */
+const commonTags = computed(() => {
+  const items = selectedItems.value;
+  if (!items.length) return [];
+  return allImageTags.value.filter(t => items.every(i => (i.tags ?? []).includes(t)));
+});
+
+/** 只有部分选中项有的标签(混合态)。 */
+const partialTags = computed(() => {
+  const items = selectedItems.value;
+  if (items.length < 2) return [];
+  return allImageTags.value.filter(
+    t => !commonTags.value.includes(t) && items.some(i => (i.tags ?? []).includes(t)),
+  );
+});
+
+async function toggleBatchTag(tag: string): Promise<void> {
+  await batchToggleTag(selected.value, tag);
+}
+
+async function submitBatchTags(): Promise<void> {
+  const tags = parseTags(tagInput.value);
+  if (!tags.length) return;
+  await batchAddTags(selected.value, tags);
+  tagInput.value = '';
+  notify('success', `已加到 ${selected.value.length} 张图片`);
+}
 </script>
 
 <template>
@@ -179,6 +228,12 @@ function timeOf(ts: number): string {
         <button class="tlb-btn tlb-btn--sm tlb-btn--accent" @click="enterMode('compare')">
           <Icon name="layers" /> 多图对比
         </button>
+        <input
+          v-model="tagQuery"
+          class="tlb-input tlb-gal__find"
+          placeholder="以 #標籤 篩選"
+          title="輸入標籤關鍵字篩選圖片"
+        />
         <span class="tlb-grow" />
         <span class="tlb-hint">{{ shown.length }} 张 · 点图预览</span>
         <button v-if="history.items.length" class="tlb-btn tlb-btn--ghost tlb-btn--sm" @click="clearAll">清空全部</button>
@@ -192,6 +247,51 @@ function timeOf(ts: number): string {
         <button class="tlb-btn tlb-btn--sm" :disabled="!selected.length" @click="batchDownload">
           <Icon name="download" /> 下载{{ selected.length ? ` (${selected.length})` : '' }}
         </button>
+
+        <!-- 批量标签 -->
+        <div class="tlb-gal__tagwrap">
+          <button
+            class="tlb-btn tlb-btn--sm"
+            :disabled="!selected.length"
+            @click="tagPopOpen = !tagPopOpen"
+          >
+            <Icon name="tag" /> 標籤{{ commonTags.length ? ` (${commonTags.length})` : '' }}
+          </button>
+          <template v-if="tagPopOpen">
+            <div class="tlb-gal__tagscrim" @click="tagPopOpen = false" />
+            <div class="tlb-gal__tagpop">
+              <input
+                v-model="tagInput"
+                class="tlb-input tlb-gal__taginput"
+                placeholder="輸入標籤，逗號分隔，Enter 加到選取"
+                @keydown.enter.prevent="submitBatchTags"
+              />
+              <div class="tlb-gal__taglist tlb-scroll">
+                <button
+                  v-for="t in allImageTags"
+                  :key="t"
+                  type="button"
+                  class="tlb-tagchip"
+                  :class="{
+                    'tlb-tagchip--on': commonTags.includes(t),
+                    'tlb-tagchip--partial': partialTags.includes(t),
+                  }"
+                  @click="toggleBatchTag(t)"
+                >
+                  <template v-if="commonTags.includes(t)">
+                    #{{ t }} <Icon name="close" :size="9" />
+                  </template>
+                  <template v-else>
+                    <Icon name="plus" :size="9" /> {{ t }}
+                  </template>
+                </button>
+                <span v-if="!allImageTags.length" class="tlb-gal__tagempty">尚無標籤，先在上方輸入</span>
+              </div>
+              <span class="tlb-gal__taghint">半透明＝全部都有；虛框＝部分有；點擊為全部加入／移除</span>
+            </div>
+          </template>
+        </div>
+
         <div class="tlb-gal__confirm-wrap">
           <button class="tlb-btn tlb-btn--sm tlb-btn--danger" :disabled="!selected.length" @click="askBatchDelete">
             <Icon name="trash" /> 删除{{ selected.length ? ` (${selected.length})` : '' }}
@@ -277,6 +377,14 @@ function timeOf(ts: number): string {
   gap: 6px;
 }
 
+/* 标签筛选输入:与 sm 按钮同高(26px),固定窄宽 */
+.tlb-gal__find {
+  flex: none;
+  width: 195px;
+  height: 26px;
+  font-size: 12px;
+}
+
 /* 删除确认弹层定位锚 */
 .tlb-gal__confirm-wrap {
   position: relative;
@@ -314,11 +422,70 @@ function timeOf(ts: number): string {
   gap: 6px;
 }
 
-/* 对比数超限时按钮转危险色提示 */
+/* 对比数超限按钮转危险色提示 */
 .tlb-gal__btn--warn {
   background: var(--tlb-danger);
   border-color: var(--tlb-danger);
   color: #fff;
+}
+
+/* ---- 批量标签弹层(工具栏顶部,向下展开) ---- */
+.tlb-gal__tagwrap {
+  position: relative;
+}
+
+.tlb-gal__tagscrim {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+}
+
+.tlb-gal__tagpop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 31;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 280px;
+  max-width: calc(100vw - 40px);
+  padding: 10px;
+  border: 1px solid var(--tlb-line);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface-opaque, var(--tlb-surface));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.tlb-gal__taginput {
+  font-size: 12.5px;
+}
+
+.tlb-gal__taglist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.tlb-gal__tagempty {
+  font-size: 12px;
+  color: var(--tlb-ink-muted);
+}
+
+.tlb-gal__taghint {
+  font-size: 11px;
+  color: var(--tlb-ink-muted);
+  line-height: 1.5;
+}
+
+/* 部分选中项有该标签:accent 色虚框 */
+.tlb-tagchip--partial {
+  border-color: var(--tlb-accent);
+  border-style: dashed;
+  color: var(--tlb-accent);
+  background: var(--tlb-surface-2);
 }
 
 /* ---- 网格 ---- */

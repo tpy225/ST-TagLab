@@ -131,6 +131,40 @@
   padding: 0;
 }
 
+/* ---- 标签 chip(预览/画廊共用) ---- */
+.tlb-tagchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  padding: 0 6px;
+  font-size: 10px;
+  line-height: 1.55;
+  border: 1px solid var(--tlb-line);
+  border-radius: var(--tlb-radius-pill);
+  background: var(--tlb-surface-2);
+  color: var(--tlb-ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--tlb-dur) var(--tlb-ease);
+}
+
+.tlb-tagchip:hover {
+  border-color: var(--tlb-accent);
+  color: var(--tlb-accent);
+}
+
+/* 选中态:半透明 accent,不用实色底 */
+.tlb-tagchip--on {
+  border-color: var(--tlb-accent);
+  background: color-mix(in srgb, var(--tlb-accent) 22%, transparent);
+  color: var(--tlb-accent);
+}
+
+.tlb-tagchip--on:hover {
+  background: color-mix(in srgb, var(--tlb-accent) 35%, transparent);
+}
+
 /* ---- 表单 ---- */
 .tlb-input,
 .tlb-select,

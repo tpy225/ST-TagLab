@@ -5,7 +5,7 @@
  */
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
-import { currentItem, history, removeHistory, stepSelection } from '@/state/historyList';
+import { currentItem, history, removeHistory, stepSelection, allImageTags, parseTags, setImageTag, addImageTags } from '@/state/historyList';
 import { imageUrl, openPanel, ui } from '@/state/ui';
 import { notify } from '@/st/toast';
 import Icon from '@/components/Icon.vue';
@@ -152,6 +152,32 @@ function timeOf(ts: number): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
+
+/* ══════════════ 标签 ══════════════ */
+
+const tagPopover = ref(false);
+const tagInput = ref('');
+
+const currentTags = computed<string[]>(() => item.value?.tags ?? []);
+const otherTags = computed(() => allImageTags.value.filter(t => !currentTags.value.includes(t)));
+
+function hasTag(tag: string): boolean {
+  return currentTags.value.includes(tag);
+}
+
+async function toggleTag(tag: string): Promise<void> {
+  const meta = item.value;
+  if (!meta) return;
+  await setImageTag(meta.id, tag, !hasTag(tag));
+}
+
+async function submitTagInput(): Promise<void> {
+  const meta = item.value;
+  const tags = parseTags(tagInput.value);
+  if (!meta || !tags.length) return;
+  await addImageTags(meta.id, tags);
+  tagInput.value = '';
+}
 </script>
 
 <template>
@@ -174,7 +200,52 @@ function timeOf(ts: number): string {
           <span>{{ history.items.findIndex(i => i.id === item!.id) + 1 }} / {{ history.items.length }}</span>
         </div>
 
+        <!-- 当前标签直接收进弹层,不在外面重复显示 -->
+
         <div class="tlb-pv__actions">
+          <!-- 标签:点击向上展开 -->
+          <div class="tlb-pv__tagwrap">
+            <button
+              type="button"
+              class="tlb-btn tlb-btn--sm"
+              @click="tagPopover = !tagPopover"
+            >
+              <Icon name="tag" /> 標籤{{ currentTags.length ? ` (${currentTags.length})` : '' }}
+            </button>
+            <template v-if="tagPopover">
+              <div class="tlb-pv__tagscrim" @click="tagPopover = false" />
+              <div class="tlb-pv__tagpop">
+                <input
+                  v-model="tagInput"
+                  class="tlb-input tlb-pv__taginput"
+                  placeholder="輸入標籤，逗號分隔，Enter 加入"
+                  @keydown.enter.prevent="submitTagInput"
+                />
+                <div class="tlb-pv__taglist tlb-scroll">
+                  <button
+                    v-for="t in currentTags"
+                    :key="t"
+                    type="button"
+                    class="tlb-tagchip tlb-tagchip--on"
+                    @click="toggleTag(t)"
+                  >
+                    #{{ t }} <Icon name="close" :size="9" />
+                  </button>
+                  <button
+                    v-for="t in otherTags"
+                    :key="t"
+                    type="button"
+                    class="tlb-tagchip"
+                    @click="toggleTag(t)"
+                  >
+                    <Icon name="plus" :size="9" /> {{ t }}
+                  </button>
+                  <span v-if="!allImageTags.length" class="tlb-pv__tagempty">尚無標籤，先在上方輸入</span>
+                </div>
+              </div>
+            </template>
+          </div>
+
           <button class="tlb-btn tlb-btn--sm" disabled title="即将推出(M5)">
             <Icon name="stamp" /> 水印工坊
           </button>
@@ -315,6 +386,52 @@ function timeOf(ts: number): string {
 .tlb-pv__empty {
   padding: 80px 0;
   text-align: center;
+  color: var(--tlb-ink-muted);
+}
+
+/* ---- 标签 ---- */
+.tlb-pv__tagwrap {
+  position: relative;
+}
+
+/* 点击弹窗外任意处关闭 */
+.tlb-pv__tagscrim {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+}
+
+.tlb-pv__tagpop {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 31;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 264px;
+  max-width: calc(100vw - 40px);
+  padding: 10px;
+  border: 1px solid var(--tlb-line);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface-opaque, var(--tlb-surface));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.tlb-pv__taginput {
+  font-size: 12.5px;
+}
+
+.tlb-pv__taglist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 168px;
+  overflow-y: auto;
+}
+
+.tlb-pv__tagempty {
+  font-size: 12px;
   color: var(--tlb-ink-muted);
 }
 </style>

@@ -57,6 +57,11 @@ export async function saveHistory(meta: TlbHistoryMeta, blob: Blob): Promise<voi
   await tx('blobs', 'readwrite', s => s.put({ id: meta.id, blob }));
 }
 
+/** 只更新元数据(标签等),不触碰图片 Blob。 */
+export async function putMeta(meta: TlbHistoryMeta): Promise<void> {
+  await tx('meta', 'readwrite', s => s.put(meta));
+}
+
 /** 历史列表(新→旧);limit 缺省全量 —— 手动测试场景量级不大,全读元数据无压力。 */
 export async function listHistory(limit = 500): Promise<TlbHistoryMeta[]> {
   const all = await tx<TlbHistoryMeta[]>('meta', 'readonly', s => s.getAll());
