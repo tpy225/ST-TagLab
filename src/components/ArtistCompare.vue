@@ -1043,6 +1043,12 @@ function onResDragEnd(): void {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* 桌面维持 20px;iPhone 上至少让出安全区 */
+  padding:
+    max(20px, calc(env(safe-area-inset-top, 0px) + 10px))
+    max(20px, calc(env(safe-area-inset-right, 0px) + 10px))
+    max(20px, calc(env(safe-area-inset-bottom, 0px) + 10px))
+    max(20px, calc(env(safe-area-inset-left, 0px) + 10px));
   /* 挂在 .tlb-root(pointer-events:none)下,必须恢复 */
   pointer-events: auto;
 }
@@ -1053,6 +1059,7 @@ function onResDragEnd(): void {
   width: 460px;
   max-width: calc(100vw - 40px);
   max-height: 70vh;
+  max-height: min(70vh, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px));
   background: var(--tlb-surface-opaque, var(--tlb-surface));
   border: 1px solid var(--tlb-line);
   border-radius: var(--tlb-radius);

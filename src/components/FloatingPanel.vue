@@ -246,4 +246,18 @@ function onDragUp(): void {
   font-weight: 700;
   box-shadow: inset 0 -2px 0 var(--tlb-accent);
 }
+
+/* ---- iPhone 等觸控機:撐滿安全區,避開狀態列/動態島與 Home 指示條 ----
+   內聯 left/top/width/height 由 JS 給桌面定位,移動端用 !important 覆寫。 */
+@media (max-width: 760px), (pointer: coarse) and (max-height: 480px) {
+  .tlb-panel {
+    top: calc(env(safe-area-inset-top, 0px) + 6px) !important;
+    right: calc(env(safe-area-inset-right, 0px) + 6px) !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 6px) !important;
+    left: calc(env(safe-area-inset-left, 0px) + 6px) !important;
+    width: auto !important;
+    height: auto !important;
+    border-radius: var(--tlb-radius);
+  }
+}
 </style>

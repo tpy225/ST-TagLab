@@ -1267,12 +1267,18 @@ async function onVibeImport(e: Event): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  /* 桌面維持 24px;iPhone 上至少讓出安全區 */
+  padding:
+    max(24px, calc(env(safe-area-inset-top, 0px) + 10px))
+    max(24px, calc(env(safe-area-inset-right, 0px) + 10px))
+    max(24px, calc(env(safe-area-inset-bottom, 0px) + 10px))
+    max(24px, calc(env(safe-area-inset-left, 0px) + 10px));
 }
 
 .tlb-modal {
   width: min(720px, 100%);
   max-height: 86vh;
+  max-height: min(86vh, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px));
   display: flex;
   flex-direction: column;
   background: var(--tlb-surface);

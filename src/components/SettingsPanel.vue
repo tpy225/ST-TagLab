@@ -10,7 +10,9 @@ import { testConnection } from '@/nai/client';
 import { listModels } from '@/nai/bot';
 import { newId, settings } from '@/state/settings';
 import { history, wipeHistory } from '@/state/historyList';
-import { vibeList, wipeVibes } from '@/state/vibeList';
+import { loadVibes, vibeList, wipeVibes } from '@/state/vibeList';
+import { artistPreviews, setArtistPreview } from '@/state/artistPreviews';
+import { saveVibe } from '@/storage/vibes';
 import { clearImageUrlCache } from '@/state/ui';
 import { notify } from '@/st/toast';
 import { syncFromBaibai, type BaibaiSyncReport } from '@/sync/baibai';
@@ -18,7 +20,7 @@ import { syncFromChatu8 } from '@/sync/chatu8';
 import { syncFromXiaobai } from '@/sync/xiaobaix';
 import type { SyncReport } from '@/sync/shared';
 import Icon from '@/components/Icon.vue';
-import type { TlbArtistPreset, TlbBotProfile, TlbNaiEndpoint } from '@/types';
+import type { TlbArtistPreset, TlbBotProfile, TlbNaiEndpoint, TlbVibe } from '@/types';
 
 /* ---- 三向同步(柏宝绘 / 智绘姬 / 小白X)---- */
 type SyncSource = 'baibai' | 'chatu8' | 'xiaobaix';
@@ -558,14 +560,38 @@ function finishQtDrag(): void {
 onUnmounted(finishQtDrag);
 
 /* ---- 导入 / 导出 JSON ---- */
-function downloadJson(): void {
-  const payload = {
+/** 是否把连接、Bot 等完整设置也打进备份(默认只备创作资产)。 */
+const includeAllSettings = ref(false);
+
+async function downloadJson(): Promise<void> {
+  if (!vibeList.loaded) await loadVibes();
+  const payload: Record<string, unknown> = {
     type: 'st-taglab-backup',
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
+    // 创作资产
     artistPresets: settings.artistPresets,
+    previews: Object.entries(artistPreviews).map(([id, dataUrl]) => ({ id, dataUrl })),
+    vibes: vibeList.items.map(v => {
+      const { busy: _busy, ...rest } = v;
+      return rest;
+    }),
+    vibeGroups: settings.vibeGroups,
+    quickTags: settings.quickTags,
+    watermarkPresets: settings.watermarkPresets,
   };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  if (includeAllSettings.value) {
+    payload.fullSettings = {
+      theme: settings.theme,
+      nai: settings.nai,
+      bot: settings.bot,
+      activeArtistId: settings.activeArtistId,
+      artistFirst: settings.artistFirst,
+      qualityLast: settings.qualityLast,
+      compareInterval: settings.compareInterval,
+    };
+  }
+  const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -591,24 +617,81 @@ function mergeByKey<T extends { id: string }>(list: T[], incoming: T[]): { added
   return { added, updated };
 }
 
-function importJson(file: File): void {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const data = JSON.parse(String(reader.result)) as {
-        artistPresets?: TlbArtistPreset[];
-      };
-      let msg = '';
-      if (Array.isArray(data.artistPresets) && data.artistPresets.length) {
-        const r = mergeByKey(settings.artistPresets, data.artistPresets);
-        msg += `画师串新增 ${r.added}、更新 ${r.updated};`;
-      }
-      notify('success', msg || '文件里没有可导入的内容');
-    } catch (e) {
-      notify('error', `导入失败:${e instanceof Error ? e.message : '文件不是合法 JSON'}`);
+/** Vibe 按 id 落盘并同步内存;返回 新增/更新数。 */
+async function upsertVibes(incoming: unknown): Promise<{ added: number; updated: number }> {
+  if (!Array.isArray(incoming)) return { added: 0, updated: 0 };
+  let added = 0;
+  let updated = 0;
+  for (const raw of incoming) {
+    if (!raw || typeof raw !== 'object' || typeof (raw as { id?: unknown }).id !== 'string') continue;
+    const plain = { ...(raw as TlbVibe), busy: false };
+    await saveVibe(plain);
+    const idx = vibeList.items.findIndex(v => v.id === plain.id);
+    if (idx >= 0) {
+      vibeList.items[idx] = plain;
+      updated++;
+    } else {
+      vibeList.items.push(plain);
+      added++;
     }
-  };
-  reader.readAsText(file);
+  }
+  return { added, updated };
+}
+
+async function importJson(file: File): Promise<void> {
+  try {
+    const data = JSON.parse(await file.text()) as Record<string, unknown>;
+    const parts: string[] = [];
+
+    if (Array.isArray(data.artistPresets) && data.artistPresets.length) {
+      const r = mergeByKey(settings.artistPresets, data.artistPresets as TlbArtistPreset[]);
+      parts.push(`画师串 +${r.added}/改${r.updated}`);
+    }
+
+    if (Number(data.version) >= 2) {
+      const previews = Array.isArray(data.previews) ? data.previews : [];
+      let pv = 0;
+      for (const p of previews) {
+        const rec = p as { id?: string; dataUrl?: string };
+        if (rec?.id && rec.dataUrl) {
+          await setArtistPreview(rec.id, rec.dataUrl);
+          pv++;
+        }
+      }
+      if (pv) parts.push(`预览图 ${pv}`);
+
+      const vr = await upsertVibes(data.vibes);
+      if (vr.added || vr.updated) parts.push(`Vibe +${vr.added}/改${vr.updated}`);
+
+      for (const [field, key] of [
+        ['vibeGroups', 'vibeGroups'],
+        ['quickTags', 'quickTags'],
+        ['watermarkPresets', 'watermarkPresets'],
+      ] as const) {
+        const r = mergeByKey(
+          settings[key] as { id: string }[],
+          (data[field] as { id: string }[]) ?? [],
+        );
+        if (r.added || r.updated) parts.push(`${key} +${r.added}/改${r.updated}`);
+      }
+
+      const full = data.fullSettings;
+      if (full && typeof full === 'object') {
+        const ok = window.confirm('备份含完整设置(连接、Bot、界面等),导入会覆盖当前这些配置。继续?');
+        if (ok) {
+          const src = full as Record<string, unknown>;
+          for (const key of ['theme', 'nai', 'bot', 'activeArtistId', 'artistFirst', 'qualityLast', 'compareInterval']) {
+            if (key in src) (settings as Record<string, unknown>)[key] = src[key];
+          }
+          parts.push('完整设置已覆盖');
+        }
+      }
+    }
+
+    notify('success', parts.join(';') || '文件里没有可导入的内容');
+  } catch (e) {
+    notify('error', `导入失败:${e instanceof Error ? e.message : '文件不是合法 JSON'}`);
+  }
 }
 
 function onImportFile(e: Event): void {
@@ -989,10 +1072,10 @@ const RESOURCE_LINKS = [
       <div v-if="open.data" class="tlb-card__body">
         <div class="tlb-row">
           <h3 class="tlb-tiphead">
-            画师串库备份
+            全量备份
             <span class="tlb-tip" tabindex="0">
               <Icon name="info" />
-              <span class="tlb-tip__body">把画师串库导出为 JSON 文件备份;导入时按 id 合并:同名覆盖、新条目追加,不影响其他资料。</span>
+              <span class="tlb-tip__body">导出画师串、预览图、Vibe、Vibe 组、快捷输入、水印样式;导入按 id 合并:同名覆盖、新条目追加,不影响其他资料。勾选后可一并备份连接与 Bot 等完整设置。兼容旧版备份文件。</span>
             </span>
           </h3>
           <span class="tlb-grow" />
@@ -1001,6 +1084,10 @@ const RESOURCE_LINKS = [
             <Icon name="file-up" /> 导入 JSON
             <input type="file" accept="application/json,.json" style="display: none" @change="onImportFile" />
           </label>
+        </div>
+        <div class="tlb-row">
+          <input v-model="includeAllSettings" class="tlb-checkbox" id="tlb-fullsettings" type="checkbox" />
+          <label for="tlb-fullsettings" class="tlb-hint">一併备份连接、Bot、界面等完整设置(导入时会覆盖当前配置)</label>
         </div>
         <div class="tlb-cfg__divider" />
         <div class="tlb-set__data">
