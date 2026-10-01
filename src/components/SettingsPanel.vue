@@ -191,6 +191,8 @@ async function test(): Promise<void> {
 /* ---- 提示词助手:多配置档 ---- */
 const showBotKey = ref(false);
 const botLoading = ref(false);
+/** Model 自定义下拉是否展开(input 仍可手填 id)。 */
+const botModelOpen = ref(false);
 
 /** Provider 常用官方渠道(国内品牌优先);url 为空 = 自定义,不代填。 */
 const BOT_PROVIDERS = [
@@ -299,6 +301,12 @@ function onProviderChange(e: Event): void {
   if (prov.model && !botDraft.model.trim()) botDraft.model = prov.model;
 }
 
+/** 从下拉选某个模型:写入草稿并收起(input 本身仍可手动改)。 */
+function pickBotModel(m: string): void {
+  botDraft.model = m;
+  botModelOpen.value = false;
+}
+
 /** 拉取模型列表:用表单草稿里的地址/Key 请求,结果存进当前档、Model 草稿留空时自动填。 */
 async function fetchBotModels(): Promise<void> {
   botLoading.value = true;
@@ -306,7 +314,8 @@ async function fetchBotModels(): Promise<void> {
     const ids = await listModels({ baseUrl: botDraft.baseUrl, key: botDraft.key });
     activeBot.value.models = ids;
     if (!botDraft.model.trim() && ids.length) botDraft.model = ids[0];
-    notify('success', `拉到 ${ids.length} 个模型,点 Model 框可直接选`);
+    botModelOpen.value = true;
+    notify('success', `拉到 ${ids.length} 个模型,已展开可选`);
   } catch (e) {
     notify('error', e instanceof Error ? e.message : String(e));
   } finally {
@@ -802,16 +811,34 @@ const RESOURCE_LINKS = [
         <div class="tlb-cfg__field">
           <span class="tlb-cfg__label">Model</span>
           <div class="tlb-cfg__ctrlrow">
-            <input
-              v-model="botDraft.model"
-              class="tlb-input tlb-cfg__grow"
-              list="tlb-bot-models"
-              placeholder="填写模型 id,或点右侧拉取后从联想里选"
-              autocomplete="off"
-            />
-            <datalist id="tlb-bot-models">
-              <option v-for="m in activeBot.models" :key="m" :value="m" />
-            </datalist>
+            <div class="tlb-modeldd tlb-cfg__grow">
+              <input
+                v-model="botDraft.model"
+                class="tlb-input tlb-modeldd__input"
+                placeholder="填写模型 id,或点右侧 ∨ 从已拉取列表选"
+                autocomplete="off"
+                @focus="botModelOpen = true"
+              />
+              <button
+                type="button"
+                class="tlb-modeldd__btn"
+                :title="botModelOpen ? '收起列表' : '展开已拉取模型'"
+                @click="botModelOpen = !botModelOpen"
+              >
+                <Icon :name="botModelOpen ? 'chevron-up' : 'chevron-down'" :size="15" />
+              </button>
+              <div v-if="botModelOpen" class="tlb-modeldd__mask" @click="botModelOpen = false" />
+              <ul v-if="botModelOpen" class="tlb-modeldd__menu">
+                <li v-if="!activeBot.models.length" class="tlb-modeldd__empty">尚未拉取到模型,点右侧「拉取模型」</li>
+                <li
+                  v-for="m in activeBot.models"
+                  :key="m"
+                  class="tlb-modeldd__item"
+                  :class="{ 'is-active': m === botDraft.model }"
+                  @click="pickBotModel(m)"
+                >{{ m }}</li>
+              </ul>
+            </div>
             <button class="tlb-btn tlb-btn--sm" :disabled="botLoading" @click="fetchBotModels">
               <Icon :name="botLoading ? 'loader' : 'cloud-down'" :spin="botLoading" :size="15" /> 拉取模型
             </button>
@@ -1292,6 +1319,88 @@ const RESOURCE_LINKS = [
 
 .tlb-keyinp__eye:hover {
   color: var(--tlb-accent);
+}
+
+/* ---- Model 可输入+可展开下拉 ---- */
+.tlb-modeldd {
+  position: relative;
+  display: flex;
+}
+
+.tlb-modeldd__input {
+  width: 100%;
+  padding-right: 32px;
+}
+
+.tlb-modeldd__btn {
+  position: absolute;
+  top: 50%;
+  right: 3px;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--tlb-ink-soft);
+  cursor: pointer;
+}
+
+.tlb-modeldd__btn:hover {
+  color: var(--tlb-accent);
+}
+
+.tlb-modeldd__mask {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.tlb-modeldd__menu {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  right: 0;
+  z-index: 41;
+  margin: 0;
+  padding: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+  list-style: none;
+  background: var(--tlb-surface);
+  border: 1px solid var(--tlb-line);
+  border-radius: var(--tlb-radius, 8px);
+  box-shadow: var(--tlb-shadow, 0 8px 24px rgba(0, 0, 0, 0.35));
+}
+
+.tlb-modeldd__item {
+  padding: 6px 8px;
+  font-size: 12.5px;
+  color: var(--tlb-ink);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tlb-modeldd__item:hover {
+  background: var(--tlb-line);
+}
+
+.tlb-modeldd__item.is-active {
+  color: var(--tlb-accent);
+  font-weight: 600;
+}
+
+.tlb-modeldd__empty {
+  padding: 8px;
+  font-size: 12px;
+  color: var(--tlb-ink-soft);
 }
 
 /* ---- 小标题 + ⓘ 说明浮层(同生成页 vibe 标题) ---- */
