@@ -560,9 +560,6 @@ function finishQtDrag(): void {
 onUnmounted(finishQtDrag);
 
 /* ---- 导入 / 导出 JSON ---- */
-/** 是否把连接、Bot 等完整设置也打进备份(默认只备创作资产)。 */
-const includeAllSettings = ref(false);
-
 async function downloadJson(): Promise<void> {
   if (!vibeList.loaded) await loadVibes();
   const payload: Record<string, unknown> = {
@@ -580,17 +577,6 @@ async function downloadJson(): Promise<void> {
     quickTags: settings.quickTags,
     watermarkPresets: settings.watermarkPresets,
   };
-  if (includeAllSettings.value) {
-    payload.fullSettings = {
-      theme: settings.theme,
-      nai: settings.nai,
-      bot: settings.bot,
-      activeArtistId: settings.activeArtistId,
-      artistFirst: settings.artistFirst,
-      qualityLast: settings.qualityLast,
-      compareInterval: settings.compareInterval,
-    };
-  }
   const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -674,23 +660,11 @@ async function importJson(file: File): Promise<void> {
         );
         if (r.added || r.updated) parts.push(`${key} +${r.added}/改${r.updated}`);
       }
-
-      const full = data.fullSettings;
-      if (full && typeof full === 'object') {
-        const ok = window.confirm('备份含完整设置(连接、Bot、界面等),导入会覆盖当前这些配置。继续?');
-        if (ok) {
-          const src = full as Record<string, unknown>;
-          for (const key of ['theme', 'nai', 'bot', 'activeArtistId', 'artistFirst', 'qualityLast', 'compareInterval']) {
-            if (key in src) (settings as Record<string, unknown>)[key] = src[key];
-          }
-          parts.push('完整设置已覆盖');
-        }
-      }
     }
 
-    notify('success', parts.join(';') || '文件里没有可导入的内容');
+    notify('success', parts.join('；') || '文件里没有可导入的内容');
   } catch (e) {
-    notify('error', `导入失败:${e instanceof Error ? e.message : '文件不是合法 JSON'}`);
+    notify('error', `导入失败：${e instanceof Error ? e.message : '文件不是合法 JSON'}`);
   }
 }
 
@@ -1075,7 +1049,7 @@ const RESOURCE_LINKS = [
             全量备份
             <span class="tlb-tip" tabindex="0">
               <Icon name="info" />
-              <span class="tlb-tip__body">导出画师串、预览图、Vibe、Vibe 组、快捷输入、水印样式;导入按 id 合并:同名覆盖、新条目追加,不影响其他资料。勾选后可一并备份连接与 Bot 等完整设置。兼容旧版备份文件。</span>
+              <span class="tlb-tip__body">导出画师串、预览图、Vibe、快捷输入、水印样式等创作资产；导入按 id 合并：同名覆盖、新条目追加，不影响其他资料。</span>
             </span>
           </h3>
           <span class="tlb-grow" />
@@ -1084,10 +1058,6 @@ const RESOURCE_LINKS = [
             <Icon name="file-up" /> 导入 JSON
             <input type="file" accept="application/json,.json" style="display: none" @change="onImportFile" />
           </label>
-        </div>
-        <div class="tlb-row">
-          <input v-model="includeAllSettings" class="tlb-checkbox" id="tlb-fullsettings" type="checkbox" />
-          <label for="tlb-fullsettings" class="tlb-hint">一併备份连接、Bot、界面等完整设置(导入时会覆盖当前配置)</label>
         </div>
         <div class="tlb-cfg__divider" />
         <div class="tlb-set__data">
