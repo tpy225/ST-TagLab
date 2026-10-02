@@ -2,6 +2,7 @@
   "name": "st-taglab",
   "version": "0.1.1",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "vite build",
