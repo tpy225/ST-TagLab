@@ -63,6 +63,9 @@
 
 /* ========== 复古 · 莫兰迪紫(奶油纸 + 硬边框 + 实体投影) ========== */
 .tlb-root[data-theme='retro'] {
+  /* 強制淺色原生控件(避免宿主 color-scheme:dark 讓 select 變深色) */
+  color-scheme: light;
+
   /* 字體與圓角 */
   --tlb-font-sans: 'MiSans', 'HarmonyOS Sans SC', 'PingFang SC', 'Microsoft YaHei',
     -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -73,7 +76,7 @@
   --tlb-dur: 0.12s;
 
   /* 色板:奶油紙 / 莫蘭迪紫 / 深紫實體邊框 */
-  --tlb-bg: #ECE6F1;
+  --tlb-bg: #EFE9DC;
   --tlb-surface: #FCFAF6;
   --tlb-surface-2: #F5EFE6;
   --tlb-ink: #3D3349;
@@ -141,11 +144,11 @@
   width: 26px;
   height: 26px;
   padding: 0;
-  border: none;
+  border: 1.5px solid var(--tlb-line-strong);
   border-radius: var(--tlb-radius-sm);
-  background: var(--tlb-purple-soft);
-  color: var(--tlb-purple-text);
-  box-shadow: none;
+  background: var(--tlb-surface-2);
+  color: var(--tlb-ink-soft);
+  box-shadow: 1.5px 1.5px 0 var(--tlb-line-strong);
 }
 
 .tlb-root[data-theme='retro'] .tlb-panel__head .tlb-btn:hover {
@@ -274,7 +277,12 @@
 }
 
 .tlb-root[data-theme='retro'] .tlb-select {
+  background-color: #FCFAF6;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23615275' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9.5 12 15.5 18 9.5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 13px;
+  color: #3D3349;
 }
 
 .tlb-root[data-theme='retro'] .tlb-select option {
@@ -307,6 +315,230 @@
 .tlb-root[data-theme='retro'] .tlb-tagchip {
   border-color: var(--tlb-line);
   background: var(--tlb-surface-2);
+}
+
+/* —— GenPanel:奶油底上的白色硬卡紙 + 淡紫卡帶標題條 —— */
+
+/* 左列每個分區即一張卡帶;gap 改由各卡 margin-bottom 控制,便於縫卡 */
+.tlb-root[data-theme='retro'] .tlb-gen__prompts {
+  gap: 0;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__prompts > div {
+  background: var(--tlb-surface);
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: var(--tlb-radius);
+  box-shadow: var(--tlb-shadow-card);
+  padding: 0;
+  overflow: hidden;
+  margin-bottom: 11px;
+}
+
+/* 畫師串「預設列 + 輸入框」縫成同一張卡:上半去底框、下半去頂框 */
+.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:nth-child(1) {
+  border-radius: var(--tlb-radius) var(--tlb-radius) 0 0;
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:nth-child(2) {
+  border-radius: 0 0 var(--tlb-radius) var(--tlb-radius);
+  border-top: none;
+}
+
+/* 卡內「畫師串輸入框」改小節文字列,不再是滿版淡紫條 */
+.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:nth-child(2) > .tlb-label {
+  background: transparent;
+  border-bottom: none;
+  padding: 8px 10px 0;
+  font-size: 11.5px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:nth-child(2) > .tlb-fieldbox {
+  margin-top: 4px;
+}
+
+/* 卡內正文留 10px;標題條滿版出血 */
+.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-row,
+.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-fieldbox,
+.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-gen__quickrow {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-row {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-fieldbox {
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-gen__quickrow {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__prompts > div > .tlb-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 6px 10px;
+  background: var(--tlb-purple-soft);
+  border-bottom: 1.5px solid var(--tlb-stroke);
+  border-radius: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--tlb-ink);
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__prompts > div > .tlb-label .tlb-hint {
+  font-weight: 500;
+}
+
+/* 負面提示詞:整格卡帶,折疊條即標題列 */
+.tlb-root[data-theme='retro'] .tlb-gen__negative {
+  padding: 0;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__negtoggle {
+  margin: 0;
+  padding: 6px 10px;
+  background: var(--tlb-purple-soft);
+  border-bottom: 1.5px solid transparent;
+  font-size: 12px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__negative:has(.tlb-fieldbox) .tlb-gen__negtoggle {
+  border-bottom-color: var(--tlb-stroke);
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__sidecard:has(.tlb-gen__params) .tlb-gen__sidecard-head {
+  border-bottom-color: var(--tlb-stroke);
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__negative .tlb-fieldbox {
+  padding: 10px;
+}
+
+/* 右列:Vibe / 生圖參數卡片硬化 + 淡紫標題條 */
+.tlb-root[data-theme='retro'] .tlb-vibe,
+.tlb-root[data-theme='retro'] .tlb-gen__sidecard {
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: var(--tlb-radius);
+  box-shadow: var(--tlb-shadow-card);
+}
+
+.tlb-root[data-theme='retro'] .tlb-vibe__head {
+  padding: 6px 10px;
+  background: var(--tlb-purple-soft);
+  border-bottom: 1.5px solid var(--tlb-stroke);
+}
+
+.tlb-root[data-theme='retro'] .tlb-vibe__title {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tlb-root[data-theme='retro'] .tlb-vibe__head + .tlb-row,
+.tlb-root[data-theme='retro'] .tlb-vibe__groupbar {
+  margin-top: 10px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__sidecard-head,
+.tlb-root[data-theme='retro'] .tlb-gen__sidecard-head:hover:not(:disabled) {
+  min-height: 30px;
+  padding: 6px 10px;
+  background: var(--tlb-purple-soft);
+  border: none;
+  border-bottom: 1.5px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--tlb-ink);
+  transform: none;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__params {
+  padding: 10px;
+}
+
+/* 快捷 tag:奶油平涂小方塊 */
+.tlb-root[data-theme='retro'] .tlb-gen__quick .tlb-chip {
+  height: 25px;
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-cream);
+  color: var(--tlb-ink);
+  font-size: 11.5px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__quick .tlb-chip:hover {
+  background: var(--tlb-cream-hover);
+  border: none;
+  color: var(--tlb-ink);
+  filter: none;
+  transform: none;
+}
+
+/* AI / 生成 雙主按鈕:莫蘭迪紫 + 深紫 */
+.tlb-root[data-theme='retro'] .tlb-gen__gobtn {
+  width: 34px;
+  height: 30px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__quickrow .tlb-gen__gobtn:last-child {
+  background: var(--tlb-purple-deep);
+  border-color: var(--tlb-stroke);
+}
+
+/* 預覽區:白色硬卡紙 */
+.tlb-root[data-theme='retro'] .tlb-gen__preview {
+  background: var(--tlb-surface);
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: var(--tlb-radius);
+  box-shadow: var(--tlb-shadow-card);
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__badge {
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface);
+  color: var(--tlb-ink);
+  font-family: var(--tlb-font-pixel);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__nav {
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface);
+  color: var(--tlb-ink);
+  box-shadow: var(--tlb-shadow-btn);
+  opacity: 1;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__nav:hover {
+  background: var(--tlb-cream-hover);
+}
+
+/* 字級收緊,貼近設計稿 */
+.tlb-root[data-theme='retro'] .tlb-textarea {
+  font-size: 12.5px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-input,
+.tlb-root[data-theme='retro'] .tlb-select {
+  font-size: 12px;
 }
 
 /* —— 手機安全區媒體查詢沿用 FloatingPanel 規則,僅覆蓋框線圓角 —— */
