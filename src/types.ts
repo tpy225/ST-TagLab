@@ -119,7 +119,7 @@ export interface TlbBot {
   activeProfileId: string;
 }
 
-export type TlbTheme = 'st' | 'day' | 'night';
+export type TlbTheme = 'st' | 'day' | 'night' | 'retro';
 
 /** NAI 连接与出图参数(画板自管)。 */
 export interface TlbNai {
