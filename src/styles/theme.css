@@ -310,12 +310,49 @@
 
 .tlb-root[data-theme='retro'] .tlb-modal,
 .tlb-root[data-theme='retro'] .tlb-lib-vp,
-.tlb-root[data-theme='retro'] .tlb-pv,
 .tlb-root[data-theme='retro'] .tlb-gcmp,
 .tlb-root[data-theme='retro'] .tlb-wm {
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius);
   box-shadow: 6px 6px 0 rgba(74, 62, 89, 0.85), 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* 圖片預覽彈窗:僅保留硬邊框,不要陰影 */
+.tlb-root[data-theme='retro'] .tlb-pv {
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: var(--tlb-radius);
+  box-shadow: none;
+}
+
+/* 預覽彈窗左右箭頭:同款像素 SVG、無框無影 */
+.tlb-root[data-theme='retro'] .tlb-pv__nav {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 32px 32px;
+  box-shadow: none;
+  opacity: 0.8;
+}
+
+.tlb-root[data-theme='retro'] .tlb-pv__nav .tlb-icon {
+  display: none;
+}
+
+.tlb-root[data-theme='retro'] .tlb-pv__nav:hover {
+  background-color: transparent;
+  opacity: 1;
+}
+
+.tlb-root[data-theme='retro'] .tlb-pv__nav--l {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'><path d='M16 5v2h-2V5h2zm-4 4V7h2v2h-2zm-2 2V9h2v2h-2zm0 2H8v-2h2v2zm2 2v-2h-2v2h2zm0 0h2v2h-2v-2zm4 4v-2h-2v2h2z'/></svg>");
+}
+
+.tlb-root[data-theme='retro'] .tlb-pv__nav--r {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'><path d='M8 5v2h2V5H8zm4 4V7h-2v2h2zm2 2V9h-2v2h2zm0 2h2v-2h-2v2zm-2 2v-2h2v2h-2zm0 0h-2v2h2v-2zm-4 4v-2h2v2H8z'/></svg>");
 }
 
 /* —— chip:小實體標籤 —— */
@@ -423,10 +460,6 @@
   border-bottom-color: var(--tlb-stroke);
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__sidecard:has(.tlb-gen__params) .tlb-gen__sidecard-head {
-  border-bottom-color: var(--tlb-stroke);
-}
-
 .tlb-root[data-theme='retro'] .tlb-gen__negative .tlb-fieldbox {
   padding: 10px;
 }
@@ -448,15 +481,23 @@
 .tlb-root[data-theme='retro'] .tlb-vibe__title {
   font-size: 12px;
   font-weight: 700;
+  color: var(--tlb-ink);
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__head + .tlb-row,
+/* 第一行與標題條距離對齊畫師串預設(10px,不額外疊加 margin) */
 .tlb-root[data-theme='retro'] .tlb-vibe__groupbar {
-  margin-top: 10px;
+  margin-top: 0;
+  padding: 10px 10px 0;
 }
 
+.tlb-root[data-theme='retro'] .tlb-vibe__list {
+  padding: 10px;
+}
+
+/* 生圖參數折疊條:與負面詞同款,hover 不改變框線粗細/底色 */
 .tlb-root[data-theme='retro'] .tlb-gen__sidecard-head,
-.tlb-root[data-theme='retro'] .tlb-gen__sidecard-head:hover:not(:disabled) {
+.tlb-root[data-theme='retro'] .tlb-gen__sidecard-head:hover:not(:disabled),
+.tlb-root[data-theme='retro'] .tlb-gen__sidecard-head:focus-visible {
   min-height: 30px;
   padding: 6px 10px;
   background: var(--tlb-purple-soft);
@@ -468,6 +509,11 @@
   font-weight: 700;
   color: var(--tlb-ink);
   transform: none;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__sidecard:has(.tlb-gen__params) .tlb-gen__sidecard-head,
+.tlb-root[data-theme='retro'] .tlb-gen__sidecard:has(.tlb-gen__params) .tlb-gen__sidecard-head:hover:not(:disabled) {
+  border-bottom-color: var(--tlb-stroke);
 }
 
 .tlb-root[data-theme='retro'] .tlb-gen__params {
@@ -557,30 +603,63 @@
 }
 
 /* —— Vibe:上傳框沿用基底虛線磚;項目卡奶油底 + 深色硬陰影 —— */
+/* 網格重排:大縮圖貼左滿高,勾選框與名稱同行 */
 .tlb-root[data-theme='retro'] .tlb-vibe__item {
-  gap: 8px;
-  padding: 6px;
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  column-gap: 10px;
+  row-gap: 6px;
+  align-items: center;
+  padding: 10px;
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius-sm);
   background: var(--tlb-cream);
   box-shadow: var(--tlb-shadow-card);
 }
 
+.tlb-root[data-theme='retro'] .tlb-vibe__main {
+  display: contents;
+}
+
 .tlb-root[data-theme='retro'] .tlb-vibe__thumbimg {
-  width: 48px;
-  height: 48px;
+  grid-column: 1;
+  grid-row: 1 / span 3;
+  width: 96px;
+  height: 96px;
   border: 1px solid var(--tlb-stroke);
   border-radius: 2px;
 }
 
+.tlb-root[data-theme='retro'] .tlb-vibe__enable {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: start;
+  align-self: center;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+}
+
 .tlb-root[data-theme='retro'] .tlb-vibe__name {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  margin: 0;
+  padding-left: 30px;
   font-family: var(--tlb-font-pixel);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 
+.tlb-root[data-theme='retro'] .tlb-vibe__row {
+  grid-column: 2;
+  align-items: center;
+}
+
 .tlb-root[data-theme='retro'] .tlb-vibe__row label {
-  font-size: 11px;
+  color: var(--tlb-ink);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .tlb-root[data-theme='retro'] .tlb-vibe__row input[type='range'] {
@@ -617,7 +696,13 @@
   cursor: ew-resize;
 }
 
+.tlb-root[data-theme='retro'] .tlb-vibe__val {
+  width: 44px;
+}
+
 .tlb-root[data-theme='retro'] .tlb-vibe__val-input {
+  height: 24px;
+  padding: 0 4px;
   font-family: var(--tlb-font-pixel);
   font-weight: 700;
   color: var(--tlb-purple-text);
