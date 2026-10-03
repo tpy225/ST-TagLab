@@ -163,7 +163,6 @@ function onDragUp(): void {
         :class="{ 'tlb-tab--on': ui.tab === tab.key }"
         @click.stop="ui.tab = tab.key"
       >
-        <Icon :name="tab.icon" />
         <span>{{ tab.label }}</span>
       </button>
     </div>

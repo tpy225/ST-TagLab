@@ -66,9 +66,9 @@
   /* 強制淺色原生控件(避免宿主 color-scheme:dark 讓 select 變深色) */
   color-scheme: light;
 
-  /* 字體與圓角:PixeLify 排首位,拉丁字形自動走像素體,中文回落黑體 */
-  --tlb-font-sans: 'Pixelify Sans', 'MiSans', 'HarmonyOS Sans SC', 'PingFang SC',
-    'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  /* 字體與圓角:正文走黑體;像素體僅用於指定英文元素 */
+  --tlb-font-sans: 'MiSans', 'HarmonyOS Sans SC', 'PingFang SC', 'Microsoft YaHei',
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --tlb-font-pixel: 'Pixelify Sans', 'Courier New', ui-monospace, monospace;
   --tlb-radius-win: 10px;
   --tlb-radius: 6px;
@@ -133,6 +133,7 @@
   flex: none; /* 蓋掉全域 flex:1,徽章只包住文字 */
   display: inline-block;
   width: auto;
+  margin-right: auto; /* 把右側按鈕組推到頂欄末端 */
   font-family: var(--tlb-font-pixel);
   font-size: 11px;
   font-weight: 700;
@@ -142,14 +143,14 @@
   color: var(--tlb-purple-text);
 }
 
-/* 標題列鈕:無框無底,hover 轉紫 */
+/* 標題列鈕:奶油底無框,hover 轉紫 */
 .tlb-root[data-theme='retro'] .tlb-panel__head .tlb-btn {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: none;
   border-radius: var(--tlb-radius-sm);
-  background: transparent;
+  background: var(--tlb-cream);
   color: var(--tlb-ink-soft);
   box-shadow: none;
 }
@@ -473,7 +474,7 @@
   padding: 10px;
 }
 
-/* 快捷 tag:奶油平涂小方塊 */
+/* 快捷 tag:奶油平涂小方塊,英文走像素體 */
 .tlb-root[data-theme='retro'] .tlb-gen__quick .tlb-chip {
   height: 25px;
   padding: 0 10px;
@@ -481,7 +482,8 @@
   border-radius: var(--tlb-radius-sm);
   background: var(--tlb-cream);
   color: var(--tlb-ink);
-  font-size: 11.5px;
+  font-family: var(--tlb-font-pixel);
+  font-size: 12px;
   font-weight: 600;
   box-shadow: none;
 }
@@ -505,12 +507,12 @@
   border-color: var(--tlb-stroke);
 }
 
-/* 預覽區:白色硬卡紙 */
+/* 預覽區:白框無陰影 */
 .tlb-root[data-theme='retro'] .tlb-gen__preview {
   background: var(--tlb-surface);
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius);
-  box-shadow: var(--tlb-shadow-card);
+  box-shadow: none;
 }
 
 .tlb-root[data-theme='retro'] .tlb-gen__badge {
@@ -554,27 +556,14 @@
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'><path d='M8 5v2h2V5H8zm4 4V7h-2v2h2zm2 2V9h-2v2h2zm0 2h2v-2h-2v2zm-2 2v-2h2v2h-2zm0 0h-2v2h2v-2zm-4 4v-2h2v2H8z'/></svg>");
 }
 
-/* —— Vibe:奶油虛線上傳框 + 白硬邊項目卡 + 細長紫滑桿 —— */
-.tlb-root[data-theme='retro'] .tlb-vibe__upload {
-  border: 1.5px dashed var(--tlb-cream-stroke);
-  border-radius: var(--tlb-radius-sm);
-  background: var(--tlb-cream);
-  color: var(--tlb-ink);
-}
-
-.tlb-root[data-theme='retro'] .tlb-vibe__upload:hover:not(:disabled),
-.tlb-root[data-theme='retro'] .tlb-vibe__upload--fill {
-  border-color: var(--tlb-purple);
-  background: var(--tlb-cream-hover);
-}
-
+/* —— Vibe:上傳框沿用基底虛線磚;項目卡奶油底 + 深色硬陰影 —— */
 .tlb-root[data-theme='retro'] .tlb-vibe__item {
   gap: 8px;
   padding: 6px;
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius-sm);
-  background: var(--tlb-surface);
-  box-shadow: 1.5px 1.5px 0 rgba(97, 82, 117, 0.35);
+  background: var(--tlb-cream);
+  box-shadow: var(--tlb-shadow-card);
 }
 
 .tlb-root[data-theme='retro'] .tlb-vibe__thumbimg {
@@ -632,6 +621,15 @@
   font-family: var(--tlb-font-pixel);
   font-weight: 700;
   color: var(--tlb-purple-text);
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface);
+}
+
+.tlb-root[data-theme='retro'] .tlb-vibe__val-input:hover,
+.tlb-root[data-theme='retro'] .tlb-vibe__val-input:focus {
+  border-color: var(--tlb-stroke);
+  background: var(--tlb-surface);
 }
 
 .tlb-root[data-theme='retro'] .tlb-vibe__info-sel {
@@ -665,13 +663,24 @@
   accent-color: var(--tlb-purple);
 }
 
-/* 字級收緊,貼近設計稿 */
-.tlb-root[data-theme='retro'] .tlb-textarea {
-  font-size: 12.5px;
+/* 字級與字重:標籤/按鈕 700,正文維持一般黑體(不套用像素體) */
+.tlb-root[data-theme='retro'] .tlb-label {
+  font-weight: 700;
 }
 
-.tlb-root[data-theme='retro'] .tlb-input,
+.tlb-root[data-theme='retro'] .tlb-btn {
+  font-weight: 700;
+}
+
+.tlb-root[data-theme='retro'] .tlb-textarea,
+.tlb-root[data-theme='retro'] .tlb-input {
+  font-family: var(--tlb-font-sans);
+  font-size: 12.5px;
+  font-weight: 400;
+}
+
 .tlb-root[data-theme='retro'] .tlb-select {
+  font-family: var(--tlb-font-sans);
   font-size: 12px;
 }
 
