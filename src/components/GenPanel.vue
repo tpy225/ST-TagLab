@@ -40,7 +40,12 @@ import Icon from '@/components/Icon.vue';
 import InputActions from '@/components/InputActions.vue';
 import TlbSelect from '@/components/TlbSelect.vue';
 import { usePanelAnchor } from '@/use/panelAnchor';
+import { useIsMobile } from '@/use/useIsMobile';
 import type { TlbHistoryMeta, TlbVibe, TlbVibeGroup } from '@/types';
+
+/* 移動端判定(matchMedia + UA 雙保險,見 useIsMobile):驅動單列佈局類名。
+   不用純 CSS @media —— 安卓 ST 網頁版桌面模式 viewport≈980 會漏接 760 斷點。 */
+const isMobile = useIsMobile();
 
 const showParams = ref(false);
 const showNegative = ref(false);
@@ -699,7 +704,7 @@ async function onVibeImport(e: Event): Promise<void> {
 </script>
 
 <template>
-  <div class="tlb-gen">
+  <div class="tlb-gen" :class="{ 'tlb-gen--mobile': isMobile }">
     <div class="tlb-gen__top">
       <!-- 左列:提示词区 -->
       <div class="tlb-gen__prompts">
@@ -1826,37 +1831,43 @@ label.tlb-vibe__groupbtn {
   color: var(--tlb-danger);
 }
 
-/* —— 手機:主 grid 改單列,避免左右硬塞造成文字折行/按鈕裁切(即回報的「塌陷」) —— */
-@media (max-width: 760px), (pointer: coarse) and (max-height: 480px) {
-  .tlb-gen__top {
-    grid-template-columns: 1fr;
-    gap: 11px;
-  }
+/* —— 移動端:主 grid 改單列,避免左右硬塞造成文字折行/按鈕裁切(即回報的「塌陷」) ——
+   由 JS isMobile 類驅動,不用 @media:安卓 ST 網頁版桌面模式 viewport≈980 會漏接斷點。 */
+.tlb-gen--mobile .tlb-gen__top {
+  grid-template-columns: 1fr;
+  gap: 11px;
+}
 
-  /* Vibe 組列:下拉整行,6 顆按鈕獨立一行並可橫滑,不再被視口裁切 */
-  .tlb-vibe__groupbar {
-    flex-wrap: wrap;
-  }
-  .tlb-vibe__groupselect {
-    flex: 1 1 100%;
-  }
-  .tlb-vibe__groupbtns {
-    flex: 1 1 100%;
-    min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .tlb-vibe__groupbtns::-webkit-scrollbar {
-    display: none;
-  }
-  .tlb-vibe__groupbtn {
-    flex: none;
-  }
+/* Vibe 組列:下拉整行,6 顆按鈕獨立一行並可橫滑,不再被視口裁切 */
+.tlb-gen--mobile .tlb-vibe__groupbar {
+  flex-wrap: wrap;
+}
+.tlb-gen--mobile .tlb-vibe__groupselect {
+  flex: 1 1 100%;
+}
+.tlb-gen--mobile .tlb-vibe__groupbtns {
+  flex: 1 1 100%;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.tlb-gen--mobile .tlb-vibe__groupbtns::-webkit-scrollbar {
+  display: none;
+}
+.tlb-gen--mobile .tlb-vibe__groupbtn {
+  flex: none;
+}
 
-  /* 預覽框窄屏少占縱向空間 */
-  .tlb-gen__preview {
-    min-height: 280px;
-  }
+/* 預覽框窄屏少占縱向空間 */
+.tlb-gen--mobile .tlb-gen__preview {
+  min-height: 220px;
+}
+
+/* 生圖參數:3 列/2 列在 ≤~380px 寬度下每格不足 100px,統一改單列 */
+.tlb-gen--mobile .tlb-gen__pgrid,
+.tlb-gen--mobile .tlb-gen__prow--2,
+.tlb-gen--mobile .tlb-gen__prow--3 {
+  grid-template-columns: 1fr;
 }
 </style>

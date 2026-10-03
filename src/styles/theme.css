@@ -1146,12 +1146,7 @@
   color: var(--tlb-purple-ink);
 }
 
-/* —— 手機安全區媒體查詢沿用 FloatingPanel 規則,僅覆蓋框線圓角 —— */
-@media (max-width: 760px), (pointer: coarse) and (max-height: 480px) {
-  .tlb-root .tlb-panel {
-    border-radius: var(--tlb-radius-win);
-  }
-}
+/* 移動端圓角由 FloatingPanel 的 .tlb-panel--mobile(JS 判定)處理,不再依賴 @media。 */
 
 /* ========== 跟随酒馆:色板全部派生自宿主 --SmartTheme* ========== */
 .tlb-root[data-theme='st'] {

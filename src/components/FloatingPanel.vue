@@ -8,21 +8,36 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { settings } from '@/state/settings';
 import { closePanel, ui, type TlbTab } from '@/state/ui';
 import Icon from '@/components/Icon.vue';
+import { useIsMobile } from '@/use/useIsMobile';
 import type { TlbTheme } from '@/types';
 
 const PANEL_W = 820;
 const PANEL_H_RATIO = 0.94;
 const version = __TLB_VERSION__;
 
+/* 移動端:JS 直接給四邊 inset 全螢幕定位,不再靠 CSS @media 覆寫內聯 px(安卓 WebView/桌面模式下媒體查詢不可靠)。 */
+const isMobile = useIsMobile();
+
 const pos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 const size = ref({ w: PANEL_W, h: 600 });
 
-const style = computed(() => ({
-  left: `${pos.value.x}px`,
-  top: `${pos.value.y}px`,
-  width: `${size.value.w}px`,
-  height: `${size.value.h}px`,
-}));
+const SAFE = {
+  top: 'calc(env(safe-area-inset-top, 0px) + 6px)',
+  right: 'calc(env(safe-area-inset-right, 0px) + 6px)',
+  bottom: 'calc(env(safe-area-inset-bottom, 0px) + 6px)',
+  left: 'calc(env(safe-area-inset-left, 0px) + 6px)',
+};
+
+const style = computed(() =>
+  isMobile.value
+    ? { top: SAFE.top, right: SAFE.right, bottom: SAFE.bottom, left: SAFE.left, width: 'auto', height: 'auto' }
+    : {
+        left: `${pos.value.x}px`,
+        top: `${pos.value.y}px`,
+        width: `${size.value.w}px`,
+        height: `${size.value.h}px`,
+      },
+);
 
 const TABS: { key: TlbTab; label: string; icon: string }[] = [
   { key: 'gen', label: '生成', icon: 'sparkles' },
@@ -40,6 +55,7 @@ function clampPos(x: number, y: number): { x: number; y: number } {
 }
 
 function layout(): void {
+  if (isMobile.value) return; // 移動端用四邊 inset,不計算 px
   size.value = { w: Math.min(PANEL_W, window.innerWidth - 16), h: Math.round(window.innerHeight * PANEL_H_RATIO) };
   pos.value = settings.panelPos ? clampPos(settings.panelPos.x, settings.panelPos.y) : center();
 }
@@ -50,6 +66,7 @@ function layout(): void {
  * 纵向沿用保存的位置(仅越界拉回);结果一并落盘,下次打开仍居中。
  */
 function layoutOnResize(): void {
+  if (isMobile.value) return; // 移動端四邊 inset 自適應,不重算 px
   size.value = { w: Math.min(PANEL_W, window.innerWidth - 16), h: Math.round(window.innerHeight * PANEL_H_RATIO) };
   const savedY = settings.panelPos?.y ?? center().y;
   const x = Math.max(8, Math.round((window.innerWidth - size.value.w) / 2));
@@ -92,6 +109,8 @@ watch(
     if (open) layout();
   },
 );
+/* 旋轉屏/桌面模式切換導致斷點翻轉:重算定位 */
+watch(isMobile, () => layout());
 
 /** Esc 关闭窗口。 */
 function onKeydown(e: KeyboardEvent): void {
@@ -112,6 +131,7 @@ function cycleTheme(): void {
 let dragStart: { px: number; py: number; x: number; y: number } | null = null;
 
 function onDragDown(e: PointerEvent): void {
+  if (isMobile.value) return; // 移動端全螢幕,不允許拖動
   if ((e.target as HTMLElement).closest('button')) return;
   dragStart = { px: e.clientX, py: e.clientY, x: pos.value.x, y: pos.value.y };
   (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -130,7 +150,7 @@ function onDragUp(): void {
 </script>
 
 <template>
-  <div class="tlb-panel" :style="style">
+  <div class="tlb-panel" :class="{ 'tlb-panel--mobile': isMobile }" :style="style">
     <div class="tlb-panel__head" @pointerdown="onDragDown" @pointermove="onDragMove" @pointerup="onDragUp" @pointercancel="onDragUp">
       <Icon name="flask" />
       <span class="tlb-panel__title">Tag 实验室</span>
@@ -243,17 +263,20 @@ function onDragUp(): void {
   box-shadow: inset 0 -2px 0 var(--tlb-accent);
 }
 
-/* ---- iPhone 等觸控機:撐滿安全區,避開狀態列/動態島與 Home 指示條 ----
-   內聯 left/top/width/height 由 JS 給桌面定位,移動端用 !important 覆寫。 */
-@media (max-width: 760px), (pointer: coarse) and (max-height: 480px) {
-  .tlb-panel {
-    top: calc(env(safe-area-inset-top, 0px) + 6px) !important;
-    right: calc(env(safe-area-inset-right, 0px) + 6px) !important;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 6px) !important;
-    left: calc(env(safe-area-inset-left, 0px) + 6px) !important;
-    width: auto !important;
-    height: auto !important;
-    border-radius: var(--tlb-radius);
-  }
+/* ---- 移動端:撐滿安全區,避開狀態列/動態島與 Home 指示條 ----
+   定位由 JS matchMedia/UA 判定後直接給內聯 inset(見 useIsMobile),
+   這裡只處理圓角/內距等視覺;不再用 @media !important 覆寫,
+   避免安卓 WebView/桌面版網站下媒體查詢失靈導致 820px 桌面浮窗塌陷。 */
+.tlb-panel--mobile {
+  border-radius: var(--tlb-radius);
+}
+
+.tlb-panel--mobile .tlb-panel__head {
+  cursor: default;
+}
+
+.tlb-panel--mobile .tlb-panel__body {
+  padding: 0 10px;
+  -webkit-overflow-scrolling: touch;
 }
 </style>
