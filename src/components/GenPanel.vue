@@ -1130,6 +1130,7 @@ async function onVibeImport(e: Event): Promise<void> {
 .tlb-gen__preset-sel {
   flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
   height: 26px; /* 跟随保存按钮(26px)高度;拉长到与按钮列只隔一个 row gap */
 }
 
@@ -1525,6 +1526,7 @@ async function onVibeImport(e: Event): Promise<void> {
 .tlb-vibe__groupselect {
   flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
   width: auto;
   height: 26px; /* 跟随画师串预设下拉 */
 }
@@ -1724,6 +1726,7 @@ label.tlb-vibe__groupbtn {
 
 .tlb-vibe__info-sel {
   max-width: 110px;
+  min-height: 0; /* 22px 小尺寸下拉 */
 }
 
 /* 编码状态徽标:主题色=已编码 / 黄=待编码 / 灰=不支持 */

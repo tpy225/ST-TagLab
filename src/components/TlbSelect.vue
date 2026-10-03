@@ -148,6 +148,8 @@ function pick(value: string | number): void {
   position: relative;
   display: flex;
   width: 100%;
+  /* 預設與 .tlb-input 同高;外部明示高度的場景用 min-height:0 放行 */
+  min-height: 28px;
 }
 
 .tlb-selectdd.is-disabled {

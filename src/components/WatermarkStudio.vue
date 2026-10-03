@@ -779,6 +779,7 @@ function deletePreset(): void {
 .tlb-wm__preset-sel {
   flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
   height: 26px;
 }
 </style>

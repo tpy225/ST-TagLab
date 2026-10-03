@@ -1331,6 +1331,7 @@ const RESOURCE_LINKS = [
 .tlb-presetrow__sel {
   flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
   height: 26px;
 }
 
