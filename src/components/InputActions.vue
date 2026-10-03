@@ -44,7 +44,8 @@ defineEmits<{ copy: []; clear: []; zoom: [] }>();
   opacity: 0;
   pointer-events: none;
   transform: translateY(-2px);
-  transition: opacity var(--tlb-dur) var(--tlb-ease), transform var(--tlb-dur) var(--tlb-ease);
+  transition: opacity var(--tlb-dur) var(--tlb-ease) 0.2s,
+    transform var(--tlb-dur) var(--tlb-ease) 0.2s; /* 延遲浮現:拖 resize 時不彈出 */
 }
 
 .tlb-fieldbox:hover .tlb-ia,
@@ -56,6 +57,7 @@ defineEmits<{ copy: []; clear: []; zoom: [] }>();
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0);
+  transition-delay: 0s; /* 確認停留後立即出現;移出時即時隱藏(無延遲規則回落) */
 }
 
 .tlb-ia__btn {

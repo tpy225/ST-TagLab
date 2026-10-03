@@ -486,18 +486,19 @@
   font-weight: 500;
 }
 
-/* 間距微調(放在通用 margin 規則之後以覆寫):畫師串框收緊 1/3、正面詞減半 */
+/* 間距微調:畫師串框收緊 1/3;正面詞快捷列上移(上緣 0、下緣 10,卡片高度不變) */
 .tlb-root[data-theme='retro'] .tlb-gen__prompts > div:nth-child(2) > .tlb-fieldbox {
   margin-top: 3px;
   margin-bottom: 7px;
 }
 
 .tlb-root[data-theme='retro'] .tlb-gen__prompts > div:nth-child(3) > .tlb-fieldbox {
-  margin-bottom: 5px;
+  margin-bottom: 0;
 }
 
 .tlb-root[data-theme='retro'] .tlb-gen__prompts > div:nth-child(3) > .tlb-gen__quickrow {
-  margin-bottom: 5px;
+  margin-top: 0;
+  margin-bottom: 10px;
 }
 
 /* 負面提示詞:整格卡帶,折疊條即標題列 */
@@ -506,11 +507,16 @@
 }
 
 .tlb-root[data-theme='retro'] .tlb-gen__negtoggle {
+  justify-content: flex-start; /* 蓋掉 tlb-label 的 space-between,說明句緊貼標題 */
   margin: 0;
   padding: 4px 10px;
   background: var(--tlb-purple-soft);
   border-bottom: 1.5px solid transparent;
   font-size: 12px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-gen__negtoggle .tlb-gen__negarrow {
+  margin-left: auto;
 }
 
 .tlb-root[data-theme='retro'] .tlb-gen__negative:has(.tlb-fieldbox) .tlb-gen__negtoggle {
@@ -689,6 +695,8 @@
 }
 
 .tlb-root[data-theme='retro'] .tlb-vibe__enable {
+  position: relative;
+  z-index: 2; /* 避免被同行名稱層蓋住導致點不到 */
   grid-column: 2;
   grid-row: 1;
   justify-self: start;
@@ -696,6 +704,21 @@
   width: 18px;
   height: 18px;
   margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: 3px;
+  background: var(--tlb-surface);
+  cursor: pointer;
+}
+
+.tlb-root[data-theme='retro'] .tlb-vibe__enable:checked {
+  border-color: var(--tlb-purple);
+  background-color: var(--tlb-purple);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6 9 17l-5-5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px 12px;
 }
 
 .tlb-root[data-theme='retro'] .tlb-vibe__name {
@@ -759,7 +782,7 @@
 }
 
 .tlb-root[data-theme='retro'] .tlb-vibe__val-input {
-  height: 24px;
+  height: 22px;
   padding: 0 4px;
   font-family: var(--tlb-font-pixel);
   font-weight: 700;

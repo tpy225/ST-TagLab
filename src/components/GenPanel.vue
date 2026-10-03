@@ -783,8 +783,14 @@ async function onVibeImport(e: Event): Promise<void> {
             <span class="tlb-hint">（覆写；留空 = 官方默认）</span>
             <Icon class="tlb-gen__negarrow" :class="{ 'tlb-gen__negarrow--closed': !showNegative }" name="chevron-down" />
           </div>
-          <div v-if="showNegative" class="tlb-fieldbox">
+          <div v-if="showNegative" class="tlb-fieldbox tlb-gen__negbox">
             <textarea v-model="settings.nai.undesiredContent" class="tlb-textarea" rows="2" placeholder="留空 = 按模型取官方负面词" />
+            <button
+              class="tlb-btn tlb-btn--bare tlb-gen__negzoom"
+              type="button"
+              title="放大编辑"
+              @click="zoomTarget = 'negative'"
+            ><Icon name="maximize" /></button>
           </div>
         </div>
 
@@ -1077,6 +1083,35 @@ async function onVibeImport(e: Event): Promise<void> {
 .tlb-gen__subhead,
 .tlb-gen__cardhead {
   position: relative;
+}
+
+/* 負面詞:僅保留單顆懸浮半透明放大鈕(右下 resize 角左側),hover/聚焦浮現 */
+.tlb-gen__negzoom {
+  position: absolute;
+  right: 22px;
+  bottom: 6px;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: var(--tlb-radius-pill);
+  background: color-mix(in srgb, var(--tlb-ink) 18%, transparent);
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--tlb-dur) var(--tlb-ease) 0.2s, background var(--tlb-dur) var(--tlb-ease);
+}
+
+.tlb-gen__negbox:hover .tlb-gen__negzoom,
+.tlb-gen__negbox:focus-within .tlb-gen__negzoom {
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.tlb-gen__negzoom:hover {
+  background: color-mix(in srgb, var(--tlb-ink) 38%, transparent);
 }
 
 /* 画师串预设:下拉框占一半,四个符号钮在另一半 */
