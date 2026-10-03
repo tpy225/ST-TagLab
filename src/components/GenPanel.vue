@@ -5,7 +5,7 @@
  * 右侧 = Vibe Transfer(占位);下方 = 图片大图(滑动切换 + 回填)。
  * 回填口径:滑到某张历史图时,把它的**原始正向词**填回编辑框(不含画师串/质量词)。
  */
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 import {
   buildLwbVibeGroup,
@@ -41,6 +41,42 @@ import InputActions from '@/components/InputActions.vue';
 import TlbSelect from '@/components/TlbSelect.vue';
 import { usePanelAnchor } from '@/use/panelAnchor';
 import type { TlbHistoryMeta, TlbVibe, TlbVibeGroup } from '@/types';
+
+/* ---- 手機專注模式:依現有手機斷點切換整套布局 ---- */
+const MOBILE_MQ = window.matchMedia('(max-width: 760px), (pointer: coarse) and (max-height: 480px)');
+const isMobile = ref(MOBILE_MQ.matches);
+function onMobileChange(e: MediaQueryListEvent): void {
+  isMobile.value = e.matches;
+}
+MOBILE_MQ.addEventListener('change', onMobileChange);
+onUnmounted(() => MOBILE_MQ.removeEventListener('change', onMobileChange));
+
+type Mseg = 'prompt' | 'artist' | 'vibe' | 'params';
+const mseg = ref<Mseg>('prompt');
+const MSEGS: { key: Mseg; label: string }[] = [
+  { key: 'prompt', label: '提示詞' },
+  { key: 'artist', label: '畫師串' },
+  { key: 'vibe', label: 'vibe' },
+  { key: 'params', label: '參數' },
+];
+
+/* 狀態列:已選畫師串名、啟用中的 vibe 數 */
+const artistChipName = computed(() => activeArtistPreset()?.name ?? '');
+const enabledVibeCount = computed(() => vibeList.items.filter(v => v.enabled).length);
+
+/* 三圓點:複製 / 清空 / 放大,作用于當前分段文本 */
+function mCopy(): void {
+  if (mseg.value === 'prompt') void copyText(promptDraft.text, '正面提示词');
+  else if (mseg.value === 'artist') void copyText(artistPrompt.value, '画师串');
+}
+function mClear(): void {
+  if (mseg.value === 'prompt') clearPrompt();
+  else if (mseg.value === 'artist') clearArtist();
+}
+function mZoom(): void {
+  if (mseg.value === 'prompt') zoomTarget.value = 'prompt';
+  else if (mseg.value === 'artist') zoomTarget.value = 'artist';
+}
 
 const showParams = ref(false);
 const showNegative = ref(false);
@@ -699,7 +735,288 @@ async function onVibeImport(e: Event): Promise<void> {
 </script>
 
 <template>
-  <div class="tlb-gen">
+  <!-- ══════════ 手機專注模式:預覽 → 分段 → 編輯卡 → 固定底欄 ══════════ -->
+  <div v-if="isMobile" class="tlb-mgen">
+    <!-- 結果預覽(點圖放大;左右滑切換) -->
+    <div
+      ref="previewEl"
+      class="tlb-mgen__preview"
+      @pointerdown="onSwipeDown"
+      @pointermove="onSwipeMove"
+      @pointerup="onSwipeUp"
+      @pointercancel="onSwipeUp"
+      @click="onPreviewClick"
+    >
+      <img v-if="currentUrl" :src="currentUrl" alt="" draggable="false" />
+      <div v-else class="tlb-mgen__empty">
+        <Icon name="image" :size="26" />
+        <span>還沒有圖片</span>
+      </div>
+      <template v-if="history.items.length > 1">
+        <button class="tlb-mgen__nav tlb-mgen__nav--l" title="上一張" @click.stop="stepSelection(-1)"><Icon name="chevron-left" /></button>
+        <button class="tlb-mgen__nav tlb-mgen__nav--r" title="下一張" @click.stop="stepSelection(1)"><Icon name="chevron-right" /></button>
+      </template>
+      <span v-if="current" class="tlb-mgen__badge">{{ current.width }}×{{ current.height }} · {{ current.seed }}</span>
+    </div>
+
+    <!-- 分段切換 -->
+    <div class="tlb-mgen__seg" role="tablist">
+      <button
+        v-for="s in MSEGS"
+        :key="s.key"
+        role="tab"
+        class="tlb-mgen__segbtn"
+        :class="{ 'is-on': mseg === s.key }"
+        type="button"
+        @click="mseg = s.key"
+      >{{ s.label }}</button>
+    </div>
+
+    <!-- 編輯卡片 -->
+    <div class="tlb-mgen__card">
+      <div class="tlb-mgen__cardbar">
+        <button class="tlb-mgen__state" type="button" title="已選畫師串" @click="mseg = 'artist'">
+          <Icon name="users" :size="11" />
+          <span class="tlb-mgen__state-txt">{{ artistChipName || '未選畫師串' }}</span>
+        </button>
+        <button
+          class="tlb-mgen__state tlb-mgen__state--vibe"
+          :class="{ 'is-on': enabledVibeCount > 0 }"
+          type="button"
+          title="vibe 開關狀態"
+          @click="mseg = 'vibe'"
+        >
+          <span>vibe{{ enabledVibeCount ? ` ${enabledVibeCount}` : '' }}</span>
+        </button>
+        <span v-if="mseg === 'prompt' || mseg === 'artist'" class="tlb-mgen__dots">
+          <button class="tlb-btn tlb-btn--bare tlb-mgen__dotbtn" type="button" title="複製" @click="mCopy"><Icon name="copy" :size="13" /></button>
+          <button class="tlb-btn tlb-btn--bare tlb-mgen__dotbtn" type="button" title="清空" @click="mClear"><Icon name="eraser" :size="13" /></button>
+          <button class="tlb-btn tlb-btn--bare tlb-mgen__dotbtn" type="button" title="放大輸入框" @click="mZoom"><Icon name="maximize" :size="13" /></button>
+        </span>
+      </div>
+
+      <div class="tlb-mgen__pane">
+        <!-- 提示詞:正面 + 負面折疊 -->
+        <div v-if="mseg === 'prompt'" class="tlb-mgen__pane-pad">
+          <textarea
+            ref="promptEl"
+            v-model="promptDraft.text"
+            class="tlb-textarea tlb-mgen__ta"
+            rows="3"
+            placeholder="自然語言描述,或直接輸入英文 tag"
+            @keydown.meta.enter.prevent="generate"
+            @keydown.ctrl.enter.prevent="generate"
+          ></textarea>
+
+          <!-- 快捷輸入 + 生成(一排;生成鈕純圖標,同桌面) -->
+          <div class="tlb-mgen__quickrow">
+            <div class="tlb-mgen__quick">
+              <button
+                v-for="q in usableQuickTags"
+                :key="q.id"
+                class="tlb-chip"
+                type="button"
+                @click="insertQuickTag(q.content)"
+              >{{ q.title || q.content }}</button>
+            </div>
+            <button class="tlb-btn tlb-btn--accent tlb-btn--sm tlb-mgen__gobtn" :disabled="botGen" type="button" title="AI 提示詞" @click="aiGenerate">
+              <Icon :name="botGen ? 'loader' : 'ai'" :size="15" :spin="botGen" />
+            </button>
+            <button class="tlb-btn tlb-btn--accent tlb-btn--sm tlb-mgen__gobtn" :disabled="generating" type="button" title="NAI 生成圖片" @click="generate">
+              <Icon :name="generating ? 'loader' : 'wand-sparkles'" :size="15" :spin="generating" />
+            </button>
+          </div>
+
+          <div>
+            <button class="tlb-mgen__neghead" type="button" @click="showNegative = !showNegative">
+              <Icon class="tlb-mgen__negarrow" :class="{ 'is-closed': !showNegative }" name="chevron-down" :size="13" />
+              負面提示詞
+              <span class="tlb-hint">（留空＝官方默認）</span>
+            </button>
+            <div v-if="showNegative" class="tlb-fieldbox tlb-gen__negbox">
+              <textarea v-model="settings.nai.undesiredContent" class="tlb-textarea" rows="2" placeholder="留空 = 官方負面詞" />
+              <button class="tlb-btn tlb-btn--bare tlb-gen__negzoom" type="button" title="放大" @click="zoomTarget = 'negative'"><Icon name="maximize" /></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 畫師串:預設選擇 + 編輯 -->
+        <div v-else-if="mseg === 'artist'" class="tlb-mgen__pane-pad">
+          <div class="tlb-row tlb-gen__preset-row">
+            <TlbSelect
+              v-model="settings.activeArtistId"
+              class="tlb-gen__preset-sel"
+              :options="[{ value: '', label: '(不使用)' }, ...settings.artistPresets.map(a => ({ value: a.id, label: a.name }))]"
+              @change="onArtistPick"
+            />
+            <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" title="另存新預設" @click="saveArtistAs"><Icon name="plus" /></button>
+            <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" title="保存到當前預設" :disabled="!activeArtistPreset()" @click="saveArtist"><Icon name="save" /></button>
+            <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" title="重新命名" :disabled="!activeArtistPreset()" @click="renameArtist"><Icon name="rename" /></button>
+            <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" title="刪除" :disabled="!activeArtistPreset()" @click="removeArtist"><Icon name="trash" /></button>
+          </div>
+          <textarea v-model="artistPrompt" class="tlb-textarea tlb-mgen__ta" rows="6" :placeholder="artistPlaceholder"></textarea>
+        </div>
+
+        <!-- vibe:組欄 + 參考圖列表 -->
+        <div v-else-if="mseg === 'vibe'" class="tlb-mgen__vibe">
+          <div class="tlb-vibe">
+            <div class="tlb-row tlb-vibe__groupbar">
+              <TlbSelect
+                class="tlb-vibe__groupselect"
+                :model-value="vibeSelection.groupId"
+                :options="[{ value: '', label: '— Vibe 組 —' }, ...settings.vibeGroups.map(g => ({ value: g.id, label: `${g.name}（${g.members.length} 張）` }))]"
+                @change="onGroupPick"
+              />
+              <div class="tlb-vibe__groupbtns">
+                <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon tlb-vibe__groupbtn" type="button" title="另存為新組" @click="onGroupSaveAs"><Icon name="plus" :size="16" /></button>
+                <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon tlb-vibe__groupbtn" type="button" :disabled="!selectedGroup" title="重命名組" @click="onGroupRename"><Icon name="edit" :size="15" /></button>
+                <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon tlb-vibe__groupbtn" type="button" :title="vibeSelection.groupId ? '覆蓋保存' : '另存新組'" @click="onGroupSave"><Icon name="save" :size="15" /></button>
+                <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon tlb-vibe__groupbtn tlb-vibe__groupbtn--danger" type="button" :disabled="!selectedGroup" title="刪除組" @click="onGroupDelete"><Icon name="trash" :size="15" /></button>
+                <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon tlb-vibe__groupbtn" type="button" :disabled="!selectedGroup" title="導出組" @click="onExportGroup"><Icon name="file-export" :size="16" /></button>
+                <label class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon tlb-vibe__groupbtn" title="導入 vibe / 組">
+                  <Icon name="file-import" :size="16" />
+                  <input
+                    ref="vibeImportRef"
+                    type="file"
+                    multiple
+                    accept=".naiv4vibe,.vibe.json,.vibegroup.json,.json,application/json"
+                    hidden
+                    @change="onVibeImport"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div class="tlb-vibe__list">
+              <button
+                class="tlb-vibe__upload"
+                :class="{ 'tlb-vibe__upload--fill': vibeList.loaded && !vibeList.items.length }"
+                type="button"
+                :disabled="vibeUploading"
+                @click="vibeFileRef?.click()"
+              >
+                <Icon :name="vibeUploading ? 'loader' : 'cloud-up'" :size="17" :spin="vibeUploading" />
+                <span>{{ vibeUploading ? '處理中…' : '上傳參考圖（僅 NAI V4 / V4.5）' }}</span>
+              </button>
+              <input ref="vibeFileRef" type="file" accept="image/*" multiple hidden @change="onVibeUpload" />
+
+              <div
+                v-for="v in vibeList.items"
+                :key="v.id"
+                class="tlb-vibe__item"
+                :class="{ 'is-disabled': !v.enabled, 'is-busy': v.busy }"
+              >
+                <input v-model="v.enabled" class="tlb-vibe__enable" type="checkbox" title="勾選才參與生成" @change="onVibeChange(v)" />
+                <img class="tlb-vibe__thumbimg" :src="v.thumbnail || (v.image ? `data:image/jpeg;base64,${v.image}` : '')" :alt="v.name" />
+                <div class="tlb-vibe__main">
+                  <div class="tlb-vibe__name" :title="v.name">{{ v.name }}</div>
+                  <div class="tlb-vibe__row">
+                    <label>強度</label>
+                    <input v-model.number="v.strength" type="range" min="0" max="1" step="0.05" @input="onVibeStrengthInput(v)" @change="onVibeChange(v)" />
+                    <input v-model.number="v.strength" class="tlb-vibe__val tlb-vibe__val-input" type="number" min="0" max="1" step="0.05" title="0~1" @change="onStrengthCommit(v)" />
+                  </div>
+                  <div class="tlb-vibe__row tlb-vibe__info-row">
+                    <TlbSelect
+                      v-model="v.infoExtracted"
+                      class="tlb-vibe__info-sel"
+                      :disabled="v.busy"
+                      title="信息提取"
+                      :options="[{ value: 1, label: '高·構圖' }, { value: 0, label: '低·色彩' }]"
+                      @change="onInfoChange(v)"
+                    />
+                    <span class="tlb-vibe__badge" :class="`tlb-vibe__badge--${vibeBadge(v).cls}`">{{ vibeBadge(v).text }}</span>
+                    <span class="tlb-vibe__iconpair">
+                      <button class="tlb-vibe__iconbtn" type="button" title="導出" @click="onExportVibe(v)"><Icon name="file-export" :size="14" /></button>
+                      <button class="tlb-vibe__iconbtn tlb-vibe__iconbtn--danger" type="button" title="刪除" @click="onVibeDelete(v)"><Icon name="close" :size="14" /></button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <p v-if="!vibeList.items.length && !vibeList.loaded" class="tlb-vibe__empty">加載中…</p>
+            </div>
+
+            <div v-if="vibeStatus" class="tlb-vibe__status" :class="`tlb-vibe__status--${vibeStatusState}`">
+              <Icon :name="vibeStatusState === 'error' ? 'warning' : 'check'" :size="13" />
+              {{ vibeStatus }}
+            </div>
+          </div>
+        </div>
+
+        <!-- 參數 -->
+        <div v-else class="tlb-mgen__pane-pad">
+          <label class="tlb-gen__pfield tlb-gen__pmodel">
+            <span class="tlb-label">模型</span>
+            <TlbSelect v-model="settings.nai.model" :options="NAI_MODELS" />
+          </label>
+          <div class="tlb-gen__prow tlb-gen__prow--3">
+            <label class="tlb-gen__pfield">
+              <span class="tlb-label">采樣器</span>
+              <TlbSelect v-model="settings.nai.sampler" :options="samplers" />
+            </label>
+            <label class="tlb-gen__pfield">
+              <span class="tlb-label">噪聲表</span>
+              <TlbSelect v-model="settings.nai.noiseSchedule" :options="NAI_NOISE_SCHEDULES" />
+            </label>
+            <label class="tlb-gen__pcheck" title="Variety Boost">
+              <input v-model="settings.nai.varietyBoost" class="tlb-checkbox" type="checkbox" />
+              Variety Boost
+            </label>
+          </div>
+          <div class="tlb-gen__prow tlb-gen__prow--3">
+            <label class="tlb-gen__pfield">
+              <span class="tlb-label">步數</span>
+              <input v-model.number="settings.nai.steps" class="tlb-input" type="number" min="1" max="50" />
+            </label>
+            <label class="tlb-gen__pfield">
+              <span class="tlb-label">CFG</span>
+              <input v-model.number="settings.nai.scale" class="tlb-input" type="number" min="0" max="10" step="0.1" />
+            </label>
+            <label class="tlb-gen__pfield">
+              <span class="tlb-label">殘差</span>
+              <input v-model.number="settings.nai.cfgRescale" class="tlb-input" type="number" min="0" max="1" step="0.05" />
+            </label>
+          </div>
+          <div class="tlb-gen__prow tlb-gen__prow--2">
+            <label class="tlb-gen__pfield">
+              <span class="tlb-label">尺寸</span>
+              <TlbSelect
+                v-model="settings.nai.portraitSize"
+                title="生成圖片尺寸"
+                :options="sizeOptions.map(s => ({ value: s, label: s }))"
+              />
+            </label>
+            <label class="tlb-gen__pfield">
+              <span class="tlb-label">種子 <span class="tlb-hint">(0=隨機)</span></span>
+              <input v-model.number="settings.nai.seed" class="tlb-input" type="number" min="0" />
+            </label>
+          </div>
+        </div>
+
+        <p v-if="error" class="tlb-gen__error tlb-mgen__msg">{{ error }}</p>
+        <p v-else-if="status" class="tlb-hint tlb-mgen__msg">{{ status }}</p>
+        <p v-else-if="!activeEndpoint().key" class="tlb-hint tlb-mgen__msg">未配置 API Key：到「設置」填寫。</p>
+      </div>
+    </div>
+
+    <!-- 放大輸入框模態(與桌面版共用 zoom 狀態) -->
+    <div v-if="zoomTarget" ref="zoomBackdropEl" class="tlb-modal-backdrop" @click.self="zoomTarget = null">
+      <div class="tlb-modal-stage" :style="zoomAnchorStyle">
+        <div class="tlb-modal" role="dialog" aria-modal="true" :aria-label="`放大編輯${ZOOM_TITLES[zoomTarget]}`">
+          <div class="tlb-modal__head">
+            <b>{{ ZOOM_TITLES[zoomTarget] }}</b>
+            <span class="tlb-grow" />
+            <button class="tlb-btn tlb-btn--bare tlb-btn--sm tlb-btn--icon" title="關閉" @click="zoomTarget = null"><Icon name="close" /></button>
+          </div>
+          <textarea v-model="zoomText" class="tlb-modal__ta tlb-textarea"></textarea>
+          <div class="tlb-modal__foot">
+            <button class="tlb-btn tlb-btn--accent" @click="zoomTarget = null">完成</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div v-else class="tlb-gen">
     <div class="tlb-gen__top">
       <!-- 左列:提示词区 -->
       <div class="tlb-gen__prompts">
@@ -1858,5 +2175,261 @@ label.tlb-vibe__groupbtn {
   .tlb-gen__preview {
     min-height: 280px;
   }
+}
+
+/* ══════════════ 手機專注模式 .tlb-mgen ══════════════ */
+.tlb-mgen {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ---- 結果預覽 ---- */
+.tlb-mgen__preview {
+  position: relative;
+  flex: 1 1 auto; /* 填滿上部 */
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: var(--tlb-radius);
+  background: var(--tlb-surface-2);
+  box-shadow: var(--tlb-shadow-card);
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.tlb-mgen__preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  cursor: zoom-in;
+}
+
+.tlb-mgen__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--tlb-ink-muted);
+  font-size: 12px;
+}
+
+.tlb-mgen__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-overlay);
+  color: #fff;
+}
+
+.tlb-mgen__nav--l {
+  left: 8px;
+}
+.tlb-mgen__nav--r {
+  right: 8px;
+}
+
+.tlb-mgen__badge {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  padding: 2px 8px;
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-overlay);
+  color: #fff;
+  font-size: 10.5px;
+}
+
+/* ---- 分段切換:無外框,獨立按鍵 ---- */
+.tlb-mgen__seg {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.tlb-mgen__segbtn {
+  border: 1px solid var(--tlb-line);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface-2);
+  padding: 3px 0; /* 高度減半 */
+  color: var(--tlb-ink-soft);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.tlb-mgen__segbtn.is-on {
+  border-color: var(--tlb-stroke);
+  background: var(--tlb-surface);
+  color: var(--tlb-ink);
+  box-shadow: var(--tlb-shadow-btn);
+}
+
+/* ---- 編輯卡片 ---- */
+.tlb-mgen__card {
+  flex: none;
+  max-height: 46%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid var(--tlb-stroke);
+  border-radius: var(--tlb-radius-win);
+  background: var(--tlb-surface);
+  box-shadow: var(--tlb-shadow-card);
+  overflow: hidden;
+}
+
+.tlb-mgen__cardbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--tlb-line);
+}
+
+.tlb-mgen__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 42%;
+  padding: 1px 6px; /* 尺寸減半 */
+  border: 1px solid var(--tlb-line);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface-2);
+  color: var(--tlb-ink-soft);
+  font-size: 9.5px;
+  white-space: nowrap;
+}
+
+.tlb-mgen__state-txt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* vibe chip:有啟用 → accent 實底變色 */
+.tlb-mgen__state--vibe.is-on {
+  border-color: var(--tlb-accent);
+  background: var(--tlb-accent);
+  color: var(--tlb-accent-ink);
+}
+
+/* 三圓點 → 桌面版 bare 圖標鈕 */
+.tlb-mgen__dots {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.tlb-mgen__dotbtn {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+}
+
+/* ---- 卡片內容(自身滾動) ---- */
+.tlb-mgen__pane {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.tlb-mgen__pane-pad {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+}
+
+.tlb-mgen__ta {
+  min-height: 0;
+  resize: none;
+}
+
+.tlb-mgen__neghead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  border: none;
+  background: none;
+  color: var(--tlb-ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tlb-mgen__negarrow {
+  transition: transform var(--tlb-dur) var(--tlb-ease);
+}
+.tlb-mgen__negarrow.is-closed {
+  transform: rotate(-90deg);
+}
+
+.tlb-mgen__vibe {
+  flex: 1;
+  min-height: 0;
+  padding: 8px;
+}
+
+.tlb-mgen__vibe .tlb-vibe {
+  border-radius: var(--tlb-radius);
+}
+
+/* vibe 列表高度跟隨卡片,不用桌面的 26vh 固定值 */
+.tlb-mgen__vibe .tlb-vibe__list {
+  height: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.tlb-mgen__msg {
+  margin: 0;
+  padding: 0 10px 10px;
+  font-size: 12px;
+}
+
+/* ---- 快捷輸入 + 生成鈕:同一排 ---- */
+.tlb-mgen__quickrow {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tlb-mgen__quick {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tlb-mgen__quick::-webkit-scrollbar {
+  display: none;
+}
+
+/* 生成鈕:同桌面純圖標 accent 方鈕 */
+.tlb-mgen__gobtn {
+  flex: none;
+  width: 28px;
+  height: 26px;
+  padding: 0;
 }
 </style>
