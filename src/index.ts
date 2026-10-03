@@ -39,7 +39,27 @@ const INHERITED_RESET: Record<string, string> = {
   direction: 'ltr',
 };
 
-function mount(): void {
+/**
+ * 掛載前先把像素字載好,否則首屏先用 fallback 字體、字體到位後整屏跳一次字(閃動)。
+ * woff2 由 Vite 打包;失敗不阻斷啟動(回落等寬 fallback)。
+ */
+async function warmPixelFont(): Promise<void> {
+  if (!('FontFace' in window)) return;
+  try {
+    const url = new URL('./assets/fonts/PixelifySans-latin.woff2', import.meta.url).href;
+    await Promise.all(
+      [400, 700].map(async (weight) => {
+        const face = new FontFace('Pixelify Sans', `url(${url})`, { weight: String(weight) });
+        await face.load();
+        document.fonts.add(face);
+      }),
+    );
+  } catch {
+    /* 字型預載失敗時仍正常啟動,由 CSS @font-face 或系統 fallback 處理 */
+  }
+}
+
+async function mount(): Promise<void> {
   let host = document.getElementById(HOST_ID);
   if (!host) {
     host = document.createElement('div');
@@ -64,19 +84,17 @@ function mount(): void {
   const container = document.createElement('div');
   shadow.appendChild(container);
 
+  await warmPixelFont();
   createApp(App).mount(container);
 }
 
 function boot(attempt = 0): void {
   // body 就绪即可挂;不等 ST getContext(本插件不依赖它启动)
   if (document.body) {
-    try {
-      mount();
-      injectMenuButton();
-      console.log(`[TagLab] 已加载 v${__TLB_VERSION__}(画师串 ${settings.artistPresets.length} 条)`);
-    } catch (e) {
-      console.error('[TagLab] 启动失败', e);
-    }
+    void mount()
+      .then(() => injectMenuButton())
+      .then(() => console.log(`[TagLab] 已加载 v${__TLB_VERSION__}(画师串 ${settings.artistPresets.length} 条)`))
+      .catch((e: unknown) => console.error('[TagLab] 启动失败', e));
     return;
   }
   if (attempt > 40) return;

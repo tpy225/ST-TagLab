@@ -4,7 +4,7 @@
  * v-model 綁值;另發 change(值) 給需要副作用的場景。
  * 外觀吃 .tlb-select 與傳入 class,各主題自動跟隨。
  */
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 import Icon from '@/components/Icon.vue';
 
@@ -29,7 +29,32 @@ const emit = defineEmits<{
 }>();
 
 const open = ref(false);
+const rootEl = ref<HTMLElement | null>(null);
 const current = computed(() => props.options.find(o => o.value === props.modelValue));
+
+/* 彈層逃不出 .tlb-panel 的層疊上下文;打開期間把整個浮窗抬高到宿主 UI 之上,關閉復原 */
+const OPEN_Z = '100000';
+
+function panelEl(): HTMLElement | null {
+  return rootEl.value?.closest<HTMLElement>('.tlb-panel') ?? null;
+}
+
+function liftPanel(on: boolean): void {
+  const p = panelEl();
+  if (!p) return;
+  if (on) {
+    if (!p.dataset.tlbPrevZ) p.dataset.tlbPrevZ = p.style.zIndex || getComputedStyle(p).zIndex;
+    p.style.zIndex = OPEN_Z;
+  } else {
+    p.style.zIndex = p.dataset.tlbPrevZ ?? '';
+    delete p.dataset.tlbPrevZ;
+  }
+}
+
+watch(open, v => liftPanel(v));
+onBeforeUnmount(() => {
+  if (open.value) liftPanel(false);
+});
 
 function toggle(): void {
   if (props.disabled) return;
@@ -44,7 +69,7 @@ function pick(value: string | number): void {
 </script>
 
 <template>
-  <div class="tlb-selectdd" :class="{ 'is-open': open, 'is-disabled': disabled }">
+  <div ref="rootEl" class="tlb-selectdd" :class="{ 'is-open': open, 'is-disabled': disabled }">
     <button
       type="button"
       class="tlb-select tlb-selectdd__control"
