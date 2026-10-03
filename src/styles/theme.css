@@ -279,10 +279,14 @@
     inset -1px -1px 0 rgba(92, 79, 63, 0.04);
 }
 
+/* 所有輸入框:hover / :focus 都不變邊框色(僅鍵盤聚焦保留外輪廓) */
+.tlb-root[data-theme='retro'] .tlb-input:hover,
+.tlb-root[data-theme='retro'] .tlb-select:hover,
+.tlb-root[data-theme='retro'] .tlb-textarea:hover,
 .tlb-root[data-theme='retro'] .tlb-input:focus,
 .tlb-root[data-theme='retro'] .tlb-select:focus,
 .tlb-root[data-theme='retro'] .tlb-textarea:focus {
-  border-color: var(--tlb-purple);
+  border-color: var(--tlb-line-strong);
 }
 
 .tlb-root[data-theme='retro'] .tlb-select {
@@ -297,6 +301,133 @@
 .tlb-root[data-theme='retro'] .tlb-select option {
   background: #F7F1E7;
   color: #423A2E;
+}
+
+/* —— 畫師庫:搜索框改方角硬邊(同標籤篩選,不用膠囊) —— */
+.tlb-root[data-theme='retro'] .tlb-lib__search {
+  height: 26px;
+  border: 1.5px solid var(--tlb-line-strong);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface);
+  box-shadow: inset 1.5px 1.5px 0 rgba(92, 79, 63, 0.08);
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__search:focus-within {
+  border-color: var(--tlb-line-strong);
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__search-clear {
+  border: 1px solid var(--tlb-cream-stroke);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-cream);
+}
+
+/* —— 畫師庫縮圖卡:滿版標題條 + 內框圖(參考設計稿) —— */
+.tlb-root[data-theme='retro'] .tlb-lib__picks {
+  counter-reset: tlb-card;
+  gap: 12px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__card {
+  counter-increment: tlb-card;
+  gap: 6px;
+  padding: 6px;
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: 8px;
+  background: var(--tlb-surface);
+  box-shadow: var(--tlb-shadow-card);
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__card:active {
+  transform: translate(1.5px, 1.5px);
+  box-shadow: 1px 1px 0 #6B5C48;
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__card--on,
+.tlb-root[data-theme='retro'] .tlb-lib__card--on:hover {
+  border-color: var(--tlb-stroke);
+  box-shadow: var(--tlb-shadow-card);
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__cardname {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin: -6px -6px 0;
+  padding: 4px 8px;
+  border-bottom: 1.5px solid var(--tlb-stroke);
+  background: var(--tlb-purple-soft);
+  font-family: var(--tlb-font-pixel);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--tlb-ink);
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__cardname::after {
+  content: '#' counter(tlb-card, decimal-leading-zero);
+  flex: none;
+  color: var(--tlb-ink-soft);
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__card--on .tlb-lib__cardname {
+  background: var(--tlb-purple);
+  color: var(--tlb-purple-ink);
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__card--on .tlb-lib__cardname::after {
+  color: var(--tlb-purple-ink);
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__media {
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-cream);
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__img {
+  border-radius: 2px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__noimg {
+  font-family: var(--tlb-font-pixel);
+  font-size: 10px;
+}
+
+/* 勾選角標:方角硬邊 */
+.tlb-root[data-theme='retro'] .tlb-lib__pickbadge {
+  top: 10px;
+  left: 10px;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: 3px;
+  background: var(--tlb-purple);
+  color: var(--tlb-purple-ink);
+  box-shadow: 1px 1px 0 rgba(107, 92, 72, 0.4);
+}
+
+/* 卡上操作鈕:奶白方角硬邊 */
+.tlb-root[data-theme='retro'] .tlb-lib__cardbtn {
+  width: 24px;
+  height: 24px;
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface);
+  color: var(--tlb-ink);
+  box-shadow: 1.5px 1.5px 0 rgba(107, 92, 72, 0.5);
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__cardbtn:hover {
+  background: var(--tlb-cream);
+  color: var(--tlb-purple-text);
+}
+
+.tlb-root[data-theme='retro'] .tlb-lib__cardbtn--danger,
+.tlb-root[data-theme='retro'] .tlb-lib__cardbtn--danger:hover {
+  background: var(--tlb-surface);
+  color: var(--tlb-danger);
 }
 
 /* —— 設置卡片 / 彈窗:硬框實影 —— */
@@ -743,7 +874,8 @@
   font-weight: 700;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__row input[type='range'] {
+/* 所有滑桿統一 vibe 款:4px 細軸 + 4×12 陶色細長滑塊 */
+.tlb-root[data-theme='retro'] input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
@@ -755,7 +887,7 @@
   cursor: ew-resize;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__row input[type='range']::-webkit-slider-thumb {
+.tlb-root[data-theme='retro'] input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 4px;
@@ -767,7 +899,7 @@
   cursor: ew-resize;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__row input[type='range']::-moz-range-thumb {
+.tlb-root[data-theme='retro'] input[type='range']::-moz-range-thumb {
   width: 4px;
   height: 12px;
   border: 1px solid var(--tlb-stroke);

@@ -491,7 +491,7 @@ async function onVibeUpload(e: Event): Promise<void> {
     } else if (!currentModelKey.value) {
       setVibeStatus('图片已入库;当前模型不支持 Vibe,切到 V4 / V4.5 后生成时自动编码', 'error');
     } else if (!lastError) {
-      setVibeStatus('处理完成:已入库并勾选', 'success');
+      setVibeStatus(); /* 成功不提示:清空「正在編碼」進度列 */
     }
   } finally {
     vibeUploading.value = false;
@@ -1088,8 +1088,8 @@ async function onVibeImport(e: Event): Promise<void> {
 /* 負面詞:僅保留單顆懸浮半透明放大鈕(右下角、resize 抓取區上方),hover/聚焦浮現 */
 .tlb-gen__negzoom {
   position: absolute;
-  right: 6px;
-  bottom: 24px;
+  right: 8px;
+  bottom: 26px;
   z-index: 2;
   width: 22px;
   height: 22px;
