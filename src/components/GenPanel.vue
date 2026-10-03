@@ -1089,7 +1089,7 @@ async function onVibeImport(e: Event): Promise<void> {
 .tlb-gen__negzoom {
   position: absolute;
   right: 10px;
-  top: 6px;
+  top: 10px;
   z-index: 2;
   width: 22px;
   height: 22px;

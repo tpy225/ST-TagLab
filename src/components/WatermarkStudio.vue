@@ -505,10 +505,10 @@ function deletePreset(): void {
             <input v-model.number="cfg.opacity" type="range" min="0.05" max="1" step="0.05" />
           </label>
 
-          <label class="tlb-field tlb-field--row">
+          <div class="tlb-field tlb-field--row">
             <span>顏色</span>
             <input v-model="cfg.color" type="color" class="tlb-wm__color" />
-          </label>
+          </div>
         </template>
 
         <!-- 平鋪專屬 -->

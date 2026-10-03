@@ -383,12 +383,12 @@
   color: var(--tlb-purple-ink);
 }
 
-/* 操作鈕常駐標題列右側(覆寫基底的絕定位 hover 浮現) */
+/* 操作鈕常駐標題列右側(覆寫基底的絕定位 hover 浮現);無底無框緊貼 */
 .tlb-root[data-theme='retro'] .tlb-lib__actions {
   position: static;
   display: flex;
   flex: none;
-  gap: 3px;
+  gap: 0;
   opacity: 1;
   pointer-events: auto;
 }
@@ -421,27 +421,26 @@
   box-shadow: 1px 1px 0 rgba(107, 92, 72, 0.4);
 }
 
-/* 卡上操作鈕:白底細邊方塊、無陰影(同生成頁標題列的複製/清空) */
+/* 卡上操作鈕:無底無框純圖示,hover 變色 */
 .tlb-root[data-theme='retro'] .tlb-lib__cardbtn {
   width: 18px;
   height: 18px;
   padding: 0;
-  border: 1px solid var(--tlb-stroke);
+  border: none;
   border-radius: 2px;
-  background: var(--tlb-surface);
-  color: var(--tlb-ink);
+  background: transparent;
+  color: var(--tlb-ink-soft);
   box-shadow: none;
 }
 
 .tlb-root[data-theme='retro'] .tlb-lib__cardbtn:hover {
-  background: var(--tlb-cream-hover);
-  border-color: var(--tlb-purple);
+  background: transparent;
   color: var(--tlb-purple-text);
 }
 
 .tlb-root[data-theme='retro'] .tlb-lib__cardbtn--danger,
 .tlb-root[data-theme='retro'] .tlb-lib__cardbtn--danger:hover {
-  background: var(--tlb-surface);
+  background: transparent;
   color: var(--tlb-danger);
 }
 
@@ -818,9 +817,9 @@
   display: grid;
   grid-template-columns: 64px 1fr;
   column-gap: 8px;
-  row-gap: 4px;
+  row-gap: 2px;
   align-items: center;
-  padding: 7px;
+  padding: 6px;
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius-sm);
   background: var(--tlb-cream);
@@ -897,7 +896,7 @@
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
-  margin: 2px 0;
+  margin: 0;
   border: 1px solid var(--tlb-stroke);
   border-radius: 2px;
   background: var(--tlb-surface);
