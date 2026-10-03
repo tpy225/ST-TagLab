@@ -748,9 +748,9 @@ async function onVibeImport(e: Event): Promise<void> {
       @click="onPreviewClick"
     >
       <img v-if="currentUrl" :src="currentUrl" alt="" draggable="false" />
-      <div v-else class="tlb-mgen__empty">
-        <Icon name="image" :size="26" />
-        <span>還沒有圖片</span>
+      <div v-else class="tlb-gen__empty">
+        <Icon name="image" />
+        <p>还没有图片。快点写提示词去生成吧！</p>
       </div>
       <template v-if="history.items.length > 1">
         <button class="tlb-mgen__nav tlb-mgen__nav--l" title="上一張" @click.stop="stepSelection(-1)"><Icon name="chevron-left" /></button>
@@ -773,7 +773,7 @@ async function onVibeImport(e: Event): Promise<void> {
     </div>
 
     <!-- 編輯卡片 -->
-    <div class="tlb-mgen__card">
+    <div class="tlb-mgen__card" :class="{ 'tlb-mgen__card--grow': mseg === 'prompt' && showNegative }">
       <div class="tlb-mgen__cardbar">
         <button class="tlb-mgen__state" type="button" title="已選畫師串" @click="mseg = 'artist'">
           <Icon name="users" :size="11" />
@@ -803,7 +803,7 @@ async function onVibeImport(e: Event): Promise<void> {
             v-model="promptDraft.text"
             class="tlb-textarea tlb-mgen__ta"
             rows="3"
-            placeholder="自然語言描述,或直接輸入英文 tag"
+            placeholder="或使用自然语言描述后点击AI，让提示词助手生成协助你。"
             @keydown.meta.enter.prevent="generate"
             @keydown.ctrl.enter.prevent="generate"
           ></textarea>
@@ -819,8 +819,8 @@ async function onVibeImport(e: Event): Promise<void> {
                 @click="insertQuickTag(q.content)"
               >{{ q.title || q.content }}</button>
             </div>
-            <button class="tlb-btn tlb-btn--accent tlb-btn--sm tlb-mgen__gobtn" :disabled="botGen" type="button" title="AI 提示詞" @click="aiGenerate">
-              <Icon :name="botGen ? 'loader' : 'ai'" :size="15" :spin="botGen" />
+            <button class="tlb-btn tlb-btn--accent tlb-btn--sm tlb-mgen__gobtn tlb-mgen__gobtn--ai" :disabled="botGen" type="button" title="AI 提示詞" @click="aiGenerate">
+              <Icon :name="botGen ? 'loader' : 'ai'" :size="30" :spin="botGen" />
             </button>
             <button class="tlb-btn tlb-btn--accent tlb-btn--sm tlb-mgen__gobtn" :disabled="generating" type="button" title="NAI 生成圖片" @click="generate">
               <Icon :name="generating ? 'loader' : 'wand-sparkles'" :size="15" :spin="generating" />
@@ -831,10 +831,10 @@ async function onVibeImport(e: Event): Promise<void> {
             <button class="tlb-mgen__neghead" type="button" @click="showNegative = !showNegative">
               <Icon class="tlb-mgen__negarrow" :class="{ 'is-closed': !showNegative }" name="chevron-down" :size="13" />
               負面提示詞
-              <span class="tlb-hint">（留空＝官方默認）</span>
+              <span class="tlb-hint">（覆写；留空 = 官方默认）</span>
             </button>
             <div v-if="showNegative" class="tlb-fieldbox tlb-gen__negbox">
-              <textarea v-model="settings.nai.undesiredContent" class="tlb-textarea" rows="2" placeholder="留空 = 官方負面詞" />
+              <textarea v-model="settings.nai.undesiredContent" class="tlb-textarea" rows="2" placeholder="留空 = 按模型取官方负面词" />
               <button class="tlb-btn tlb-btn--bare tlb-gen__negzoom" type="button" title="放大" @click="zoomTarget = 'negative'"><Icon name="maximize" /></button>
             </div>
           </div>
@@ -994,7 +994,7 @@ async function onVibeImport(e: Event): Promise<void> {
 
         <p v-if="error" class="tlb-gen__error tlb-mgen__msg">{{ error }}</p>
         <p v-else-if="status" class="tlb-hint tlb-mgen__msg">{{ status }}</p>
-        <p v-else-if="!activeEndpoint().key" class="tlb-hint tlb-mgen__msg">未配置 API Key：到「設置」填寫。</p>
+        <p v-else-if="!activeEndpoint().key" class="tlb-hint tlb-mgen__msg">未配置 API Key:到「设置」填写,或点「从柏宝绘同步」。</p>
       </div>
     </div>
 
@@ -2178,6 +2178,11 @@ label.tlb-vibe__groupbtn {
 }
 
 /* ══════════════ 手機專注模式 .tlb-mgen ══════════════ */
+/* 提示字句比桌面小 1px */
+.tlb-mgen .tlb-hint {
+  font-size: 11px;
+}
+
 .tlb-mgen {
   display: flex;
   flex-direction: column;
@@ -2191,13 +2196,13 @@ label.tlb-vibe__groupbtn {
   position: relative;
   flex: 1 1 auto; /* 填滿上部 */
   min-height: 120px;
+  margin: 10px 0; /* 上下間隔加大 */
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius);
   background: var(--tlb-surface-2);
-  box-shadow: var(--tlb-shadow-card);
   overflow: hidden;
   touch-action: pan-y;
   user-select: none;
@@ -2210,14 +2215,7 @@ label.tlb-vibe__groupbtn {
   cursor: zoom-in;
 }
 
-.tlb-mgen__empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  color: var(--tlb-ink-muted);
-  font-size: 12px;
-}
+/* (空狀態復用桌面 .tlb-gen__empty) */
 
 .tlb-mgen__nav {
   position: absolute;
@@ -2277,10 +2275,11 @@ label.tlb-vibe__groupbtn {
   box-shadow: var(--tlb-shadow-btn);
 }
 
-/* ---- 編輯卡片 ---- */
+/* ---- 編輯卡片:固定高度(展開負面詞時放開) ---- */
 .tlb-mgen__card {
   flex: none;
-  max-height: 46%;
+  height: 220px;
+  margin-bottom: 12px; /* 與底部分頁列拉開 */
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -2289,6 +2288,11 @@ label.tlb-vibe__groupbtn {
   background: var(--tlb-surface);
   box-shadow: var(--tlb-shadow-card);
   overflow: hidden;
+}
+
+.tlb-mgen__card--grow {
+  height: auto;
+  min-height: 220px;
 }
 
 .tlb-mgen__cardbar {
