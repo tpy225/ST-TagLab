@@ -4,37 +4,28 @@
  */
 
 .tlb-root {
-  /* —— 字体 —— */
+  /* —— 字體(設計語言層,兩色板共用):正文黑體、指定英文元素走像素體 —— */
   --tlb-font-sans: 'MiSans', 'HarmonyOS Sans SC', 'PingFang SC', 'Microsoft YaHei',
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --tlb-font-mono: 'SF Mono', 'JetBrains Mono', 'DejaVu Sans Mono', Menlo, Consolas, monospace;
+  --tlb-font-pixel: 'Pixelify Sans', 'Courier New', ui-monospace, monospace;
+  font-weight: 500;
 
-  /* —— 圆角 —— */
-  --tlb-radius-win: 16px;
-  --tlb-radius: 10px;
-  --tlb-radius-sm: 8px;
+  /* —— 圆角:硬框配小圓角 —— */
+  --tlb-radius-win: 10px;
+  --tlb-radius: 6px;
+  --tlb-radius-sm: 4px;
   --tlb-radius-pill: 999px;
 
   /* —— 动效 —— */
   --tlb-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --tlb-dur: 0.28s;
+  --tlb-dur: 0.12s;
 }
 
 /* ========== 复古 · 暖陶米(奶霜米 + 暖陶褐 + 硬边框实体投影) ========== */
 .tlb-root[data-theme='retro'] {
   /* 強制淺色原生控件(避免宿主 color-scheme:dark 讓 select 變深色) */
   color-scheme: light;
-  /* 整體內文加粗一階(400→500) */
-  font-weight: 500;
-
-  /* 字體與圓角:正文走黑體;像素體僅用於指定英文元素 */
-  --tlb-font-sans: 'MiSans', 'HarmonyOS Sans SC', 'PingFang SC', 'Microsoft YaHei',
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --tlb-font-pixel: 'Pixelify Sans', 'Courier New', ui-monospace, monospace;
-  --tlb-radius-win: 10px;
-  --tlb-radius: 6px;
-  --tlb-radius-sm: 4px;
-  --tlb-dur: 0.12s;
 
   /* 色板:奶霜米 / 暖陶褐 / 灰褐窗底(深咖實體邊框) */
   --tlb-bg: #D9D1C8;
@@ -71,26 +62,26 @@
 }
 
 /* —— 視窗外殼:復古實體視窗,2px 深紫硬框 + 實影 —— */
-.tlb-root[data-theme='retro'] .tlb-panel {
+.tlb-root .tlb-panel {
   border: 2px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius-win);
   box-shadow: var(--tlb-shadow-win);
 }
 
-.tlb-root[data-theme='retro'] .tlb-panel__head {
+.tlb-root .tlb-panel__head {
   height: 42px;
   padding: 0 12px;
   background: var(--tlb-surface);
   border-bottom: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-panel__title {
+.tlb-root .tlb-panel__title {
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.3px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-panel__ver {
+.tlb-root .tlb-panel__ver {
   flex: none; /* 蓋掉全域 flex:1,徽章只包住文字 */
   display: inline-block;
   width: auto;
@@ -105,7 +96,7 @@
 }
 
 /* 標題列鈕:奶油底無框,hover 轉紫 */
-.tlb-root[data-theme='retro'] .tlb-panel__head .tlb-btn {
+.tlb-root .tlb-panel__head .tlb-btn {
   width: 28px;
   height: 28px;
   padding: 0;
@@ -116,7 +107,7 @@
   box-shadow: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-panel__head .tlb-btn:hover {
+.tlb-root .tlb-panel__head .tlb-btn:hover {
   background: var(--tlb-purple);
   border: none;
   color: var(--tlb-purple-ink);
@@ -124,7 +115,7 @@
 }
 
 /* —— 底欄:實體抽屜按鍵(加高,與上邊線留呼吸空間) —— */
-.tlb-root[data-theme='retro'] .tlb-panel__tabs {
+.tlb-root .tlb-panel__tabs {
   height: 52px;
   padding: 9px 10px 7px;
   gap: 8px;
@@ -132,7 +123,7 @@
   border-top: 2px solid var(--tlb-stroke);
 }
 
-.tlb-root[data-theme='retro'] .tlb-tab {
+.tlb-root .tlb-tab {
   height: 30px;
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius-sm);
@@ -143,26 +134,26 @@
   box-shadow: var(--tlb-shadow-btn);
 }
 
-.tlb-root[data-theme='retro'] .tlb-tab:hover {
+.tlb-root .tlb-tab:hover {
   background: var(--tlb-purple-soft);
   color: var(--tlb-ink);
 }
 
-.tlb-root[data-theme='retro'] .tlb-tab:active {
+.tlb-root .tlb-tab:active {
   transform: translate(2px, 2px);
   box-shadow: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-tab--on,
-.tlb-root[data-theme='retro'] .tlb-tab--on:hover {
+.tlb-root .tlb-tab--on,
+.tlb-root .tlb-tab--on:hover {
   background: var(--tlb-purple);
   color: var(--tlb-purple-ink);
-  box-shadow: inset 1.5px 1.5px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: inset 1.5px 1.5px 0 color-mix(in srgb, var(--tlb-purple-ink) 28%, transparent);
   transform: translateY(1px);
 }
 
 /* —— 按鈕:硬邊框 + 偏移實影,按下陷落 —— */
-.tlb-root[data-theme='retro'] .tlb-btn {
+.tlb-root .tlb-btn {
   border-width: 1.5px;
   border-color: var(--tlb-line-strong);
   border-radius: var(--tlb-radius-sm);
@@ -173,133 +164,133 @@
     background var(--tlb-dur), border-color var(--tlb-dur), color var(--tlb-dur);
 }
 
-.tlb-root[data-theme='retro'] .tlb-btn:hover:not(:disabled) {
+.tlb-root .tlb-btn:hover:not(:disabled) {
   background: var(--tlb-cream-hover);
   border-color: var(--tlb-purple);
   filter: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-btn:active:not(:disabled) {
+.tlb-root .tlb-btn:active:not(:disabled) {
   transform: translate(2px, 2px);
   box-shadow: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-btn--accent,
-.tlb-root[data-theme='retro'] .tlb-btn--accent:hover:not(:disabled) {
+.tlb-root .tlb-btn--accent,
+.tlb-root .tlb-btn--accent:hover:not(:disabled) {
   background: var(--tlb-purple);
   border-color: var(--tlb-stroke);
   color: var(--tlb-purple-ink);
   box-shadow: var(--tlb-shadow-btn);
 }
 
-.tlb-root[data-theme='retro'] .tlb-btn--ghost {
+.tlb-root .tlb-btn--ghost {
   background: var(--tlb-surface);
 }
 
-.tlb-root[data-theme='retro'] .tlb-btn--ghost:hover:not(:disabled) {
+.tlb-root .tlb-btn--ghost:hover:not(:disabled) {
   background: var(--tlb-cream-hover);
   color: var(--tlb-ink);
 }
 
-.tlb-root[data-theme='retro'] .tlb-btn--danger {
+.tlb-root .tlb-btn--danger {
   color: var(--tlb-danger);
 }
 
-.tlb-root[data-theme='retro'] .tlb-btn--danger:hover:not(:disabled) {
+.tlb-root .tlb-btn--danger:hover:not(:disabled) {
   background: var(--tlb-danger-soft);
   border-color: var(--tlb-danger);
 }
 
 /* 純符號 bare 鈕維持無框無影(輸入框內複製/清空、眼睛等) */
-.tlb-root[data-theme='retro'] .tlb-btn--bare {
+.tlb-root .tlb-btn--bare {
   border-color: transparent;
   background: transparent;
   box-shadow: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-btn--bare:hover:not(:disabled) {
+.tlb-root .tlb-btn--bare:hover:not(:disabled) {
   background: transparent;
   border-color: transparent;
   color: var(--tlb-purple);
 }
 
-.tlb-root[data-theme='retro'] .tlb-btn--bare:active:not(:disabled) {
+.tlb-root .tlb-btn--bare:active:not(:disabled) {
   transform: none;
 }
 
 /* —— 表單:白底 + 深紫硬框 + 內凹陰影 —— */
-.tlb-root[data-theme='retro'] .tlb-input,
-.tlb-root[data-theme='retro'] .tlb-select,
-.tlb-root[data-theme='retro'] .tlb-textarea {
+.tlb-root .tlb-input,
+.tlb-root .tlb-select,
+.tlb-root .tlb-textarea {
   border: 1.5px solid var(--tlb-line-strong);
   border-radius: var(--tlb-radius-sm);
   background: var(--tlb-surface);
-  box-shadow: inset 1.5px 1.5px 0 rgba(92, 79, 63, 0.1),
-    inset -1px -1px 0 rgba(92, 79, 63, 0.04);
+  box-shadow: inset 1.5px 1.5px 0 color-mix(in srgb, var(--tlb-stroke) 12%, transparent),
+    inset -1px -1px 0 color-mix(in srgb, var(--tlb-stroke) 5%, transparent);
 }
 
 /* 所有輸入框:hover / :focus 都不變邊框色、不出外輪廓(含鍵盤 Tab 聚焦) */
-.tlb-root[data-theme='retro'] .tlb-input:hover,
-.tlb-root[data-theme='retro'] .tlb-select:hover,
-.tlb-root[data-theme='retro'] .tlb-textarea:hover,
-.tlb-root[data-theme='retro'] .tlb-input:focus,
-.tlb-root[data-theme='retro'] .tlb-select:focus,
-.tlb-root[data-theme='retro'] .tlb-textarea:focus,
-.tlb-root[data-theme='retro'] .tlb-input:focus-visible,
-.tlb-root[data-theme='retro'] .tlb-select:focus-visible,
-.tlb-root[data-theme='retro'] .tlb-textarea:focus-visible,
-.tlb-root[data-theme='retro'] .tlb-vibe__val-input:focus,
-.tlb-root[data-theme='retro'] .tlb-vibe__val-input:focus-visible,
-.tlb-root[data-theme='retro'] .tlb-lib__search-input:focus,
-.tlb-root[data-theme='retro'] .tlb-lib__search-input:focus-visible {
+.tlb-root .tlb-input:hover,
+.tlb-root .tlb-select:hover,
+.tlb-root .tlb-textarea:hover,
+.tlb-root .tlb-input:focus,
+.tlb-root .tlb-select:focus,
+.tlb-root .tlb-textarea:focus,
+.tlb-root .tlb-input:focus-visible,
+.tlb-root .tlb-select:focus-visible,
+.tlb-root .tlb-textarea:focus-visible,
+.tlb-root .tlb-vibe__val-input:focus,
+.tlb-root .tlb-vibe__val-input:focus-visible,
+.tlb-root .tlb-lib__search-input:focus,
+.tlb-root .tlb-lib__search-input:focus-visible {
   border-color: var(--tlb-line-strong);
   outline: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-select {
-  background-color: #F7F1E7;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235C4F3F' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9.5 12 15.5 18 9.5'/></svg>");
+.tlb-root .tlb-select {
+  background-color: var(--tlb-surface);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9.5 12 15.5 18 9.5'/></svg>");
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 13px;
-  color: #423A2E;
+  color: var(--tlb-ink);
 }
 
-.tlb-root[data-theme='retro'] .tlb-select option {
-  background: #F7F1E7;
-  color: #423A2E;
+.tlb-root .tlb-select option {
+  background: var(--tlb-surface);
+  color: var(--tlb-ink);
 }
 
 /* TlbSelect 控制鈕不掛原生背景三角(箭頭由元件自繪) */
-.tlb-root[data-theme='retro'] .tlb-select.tlb-selectdd__control {
+.tlb-root .tlb-select.tlb-selectdd__control {
   background-image: none;
 }
 
 /* —— 畫師庫:搜索框改方角硬邊(同標籤篩選,不用膠囊) —— */
-.tlb-root[data-theme='retro'] .tlb-lib__search {
+.tlb-root .tlb-lib__search {
   height: 26px;
   border: 1.5px solid var(--tlb-line-strong);
   border-radius: var(--tlb-radius-sm);
   background: var(--tlb-surface);
-  box-shadow: inset 1.5px 1.5px 0 rgba(92, 79, 63, 0.08);
+  box-shadow: inset 1.5px 1.5px 0 color-mix(in srgb, var(--tlb-stroke) 10%, transparent);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__search:focus-within {
+.tlb-root .tlb-lib__search:focus-within {
   border-color: var(--tlb-line-strong);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__search-clear {
+.tlb-root .tlb-lib__search-clear {
   border: 1px solid var(--tlb-cream-stroke);
   border-radius: var(--tlb-radius-sm);
   background: var(--tlb-cream);
 }
 
 /* —— 畫師庫縮圖卡:滿版標題條(含操作鈕) + 內框圖(參考設計稿) —— */
-.tlb-root[data-theme='retro'] .tlb-lib__picks {
+.tlb-root .tlb-lib__picks {
   gap: 12px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__card {
+.tlb-root .tlb-lib__card {
   gap: 6px;
   padding: 6px;
   border: 1.5px solid var(--tlb-stroke);
@@ -308,18 +299,18 @@
   box-shadow: var(--tlb-shadow-card);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__card:active {
+.tlb-root .tlb-lib__card:active {
   transform: translate(1.5px, 1.5px);
-  box-shadow: 1px 1px 0 #6B5C48;
+  box-shadow: 1px 1px 0 var(--tlb-line-strong);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__card--on,
-.tlb-root[data-theme='retro'] .tlb-lib__card--on:hover {
+.tlb-root .tlb-lib__card--on,
+.tlb-root .tlb-lib__card--on:hover {
   border-color: var(--tlb-stroke);
   box-shadow: var(--tlb-shadow-card);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__cardname {
+.tlb-root .tlb-lib__cardname {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -334,7 +325,7 @@
   color: var(--tlb-ink);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__cardname-text {
+.tlb-root .tlb-lib__cardname-text {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -342,13 +333,13 @@
   white-space: nowrap;
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__card--on .tlb-lib__cardname {
+.tlb-root .tlb-lib__card--on .tlb-lib__cardname {
   background: var(--tlb-purple);
   color: var(--tlb-purple-ink);
 }
 
 /* 操作鈕常駐標題列右側(覆寫基底的絕定位 hover 浮現);無底無框緊貼 */
-.tlb-root[data-theme='retro'] .tlb-lib__actions {
+.tlb-root .tlb-lib__actions {
   position: static;
   display: flex;
   flex: none;
@@ -357,23 +348,23 @@
   pointer-events: auto;
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__media {
+.tlb-root .tlb-lib__media {
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius-sm);
   background: var(--tlb-cream);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__img {
+.tlb-root .tlb-lib__img {
   border-radius: 2px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__noimg {
+.tlb-root .tlb-lib__noimg {
   font-family: var(--tlb-font-pixel);
   font-size: 10px;
 }
 
 /* 卡上操作鈕:無底無框純圖示、緊貼排列,hover 變陶色(刪除不變紅) */
-.tlb-root[data-theme='retro'] .tlb-lib__cardbtn {
+.tlb-root .tlb-lib__cardbtn {
   width: 16px;
   height: 16px;
   padding: 0;
@@ -384,23 +375,23 @@
   box-shadow: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__cardbtn:hover {
+.tlb-root .tlb-lib__cardbtn:hover {
   background: transparent;
   color: var(--tlb-purple-text);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__cardbtn--danger,
-.tlb-root[data-theme='retro'] .tlb-lib__cardbtn--danger:hover {
+.tlb-root .tlb-lib__cardbtn--danger,
+.tlb-root .tlb-lib__cardbtn--danger:hover {
   background: transparent;
   color: var(--tlb-ink-soft);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__cardbtn--danger:hover {
+.tlb-root .tlb-lib__cardbtn--danger:hover {
   color: var(--tlb-danger);
 }
 
 /* 二次確認小鈕:白底細邊,確認鍵紅字紅邊 */
-.tlb-root[data-theme='retro'] .tlb-lib__cardconfirm {
+.tlb-root .tlb-lib__cardconfirm {
   height: 18px;
   padding: 0 4px;
   border: 1px solid var(--tlb-stroke);
@@ -412,45 +403,45 @@
   box-shadow: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__cardconfirm--ok {
+.tlb-root .tlb-lib__cardconfirm--ok {
   border-color: var(--tlb-danger);
   color: var(--tlb-danger);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__cardconfirm--ok:hover {
+.tlb-root .tlb-lib__cardconfirm--ok:hover {
   background: var(--tlb-surface);
   color: var(--tlb-danger);
 }
 
 /* —— 設置卡片 / 彈窗:硬框實影 —— */
-.tlb-root[data-theme='retro'] .tlb-card {
+.tlb-root .tlb-card {
   border: 1.5px solid var(--tlb-line-strong);
   border-radius: var(--tlb-radius);
   box-shadow: var(--tlb-shadow-card);
 }
 
-.tlb-root[data-theme='retro'] .tlb-card__body {
+.tlb-root .tlb-card__body {
   border-top: 1.5px solid var(--tlb-line-strong);
 }
 
-.tlb-root[data-theme='retro'] .tlb-modal,
-.tlb-root[data-theme='retro'] .tlb-lib-vp,
-.tlb-root[data-theme='retro'] .tlb-gcmp,
-.tlb-root[data-theme='retro'] .tlb-wm {
+.tlb-root .tlb-modal,
+.tlb-root .tlb-lib-vp,
+.tlb-root .tlb-gcmp,
+.tlb-root .tlb-wm {
   background: var(--tlb-surface);
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius);
-  box-shadow: 6px 6px 0 rgba(92, 79, 63, 0.85), 0 18px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 6px 6px 0 var(--tlb-stroke), 0 18px 40px rgba(0, 0, 0, 0.3);
 }
 
 /* 彈窗遮罩用主題色 */
-.tlb-root[data-theme='retro'] .tlb-modal-backdrop,
-.tlb-root[data-theme='retro'] .tlb-lib-vp-backdrop {
+.tlb-root .tlb-modal-backdrop,
+.tlb-root .tlb-lib-vp-backdrop {
   background: var(--tlb-overlay);
 }
 
 /* —— 放大編輯彈窗:標題卡帶 + 平鋪 textarea —— */
-.tlb-root[data-theme='retro'] .tlb-modal__head {
+.tlb-root .tlb-modal__head {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -460,12 +451,12 @@
   font-size: 12.5px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-modal__head b {
+.tlb-root .tlb-modal__head b {
   font-weight: 700;
   color: var(--tlb-ink);
 }
 
-.tlb-root[data-theme='retro'] .tlb-modal__ta {
+.tlb-root .tlb-modal__ta {
   margin: 0;
   padding: 12px;
   border: none;
@@ -475,14 +466,14 @@
   font-weight: 500;
 }
 
-.tlb-root[data-theme='retro'] .tlb-modal__foot {
+.tlb-root .tlb-modal__foot {
   padding: 8px 10px;
   border-top: 1.5px solid var(--tlb-stroke);
   background: var(--tlb-surface);
 }
 
 /* —— 導出附帶 Vibe 選擇彈窗 —— */
-.tlb-root[data-theme='retro'] .tlb-lib-vp__head {
+.tlb-root .tlb-lib-vp__head {
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
@@ -491,12 +482,12 @@
   font-size: 12.5px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib-vp__head strong {
+.tlb-root .tlb-lib-vp__head strong {
   font-weight: 700;
   color: var(--tlb-ink);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib-vp__close {
+.tlb-root .tlb-lib-vp__close {
   width: 22px;
   height: 22px;
   border: none;
@@ -504,32 +495,32 @@
   color: var(--tlb-ink-soft);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib-vp__close:hover {
+.tlb-root .tlb-lib-vp__close:hover {
   background: transparent;
   color: var(--tlb-purple-text);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib-vp__hint {
+.tlb-root .tlb-lib-vp__hint {
   padding: 10px 12px 2px;
   font-size: 12px;
   line-height: 1.6;
   color: var(--tlb-ink-soft);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib-vp__list {
+.tlb-root .tlb-lib-vp__list {
   padding: 8px 12px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib-vp__item {
+.tlb-root .tlb-lib-vp__item {
   padding: 5px 6px;
   border-radius: var(--tlb-radius-sm);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib-vp__item:hover {
+.tlb-root .tlb-lib-vp__item:hover {
   background: var(--tlb-cream);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib-vp__thumb {
+.tlb-root .tlb-lib-vp__thumb {
   width: 40px;
   height: 40px;
   border: 1.5px solid var(--tlb-stroke);
@@ -537,14 +528,14 @@
   background: var(--tlb-cream);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib-vp__name {
+.tlb-root .tlb-lib-vp__name {
   font-family: var(--tlb-font-pixel);
   font-size: 11.5px;
   font-weight: 700;
   color: var(--tlb-ink);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib-vp__check {
+.tlb-root .tlb-lib-vp__check {
   width: 18px;
   height: 18px;
   appearance: none;
@@ -555,7 +546,7 @@
   cursor: pointer;
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib-vp__check:checked {
+.tlb-root .tlb-lib-vp__check:checked {
   border-color: var(--tlb-purple);
   background-color: var(--tlb-purple);
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233E3527' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6 9 17l-5-5'/></svg>");
@@ -564,7 +555,7 @@
   background-size: 12px 12px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib-vp__foot {
+.tlb-root .tlb-lib-vp__foot {
   gap: 8px;
   padding: 8px 10px;
   border-top: 1.5px solid var(--tlb-stroke);
@@ -572,14 +563,14 @@
 }
 
 /* 圖片預覽彈窗:僅保留硬邊框,不要陰影 */
-.tlb-root[data-theme='retro'] .tlb-pv {
+.tlb-root .tlb-pv {
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius);
   box-shadow: none;
 }
 
 /* 預覽彈窗左右箭頭:同款像素 SVG、無框無影 */
-.tlb-root[data-theme='retro'] .tlb-pv__nav {
+.tlb-root .tlb-pv__nav {
   width: 36px;
   height: 36px;
   border: none;
@@ -592,25 +583,25 @@
   opacity: 0.8;
 }
 
-.tlb-root[data-theme='retro'] .tlb-pv__nav .tlb-icon {
+.tlb-root .tlb-pv__nav .tlb-icon {
   display: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-pv__nav:hover {
+.tlb-root .tlb-pv__nav:hover {
   background-color: transparent;
   opacity: 1;
 }
 
-.tlb-root[data-theme='retro'] .tlb-pv__nav--l {
+.tlb-root .tlb-pv__nav--l {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'><path d='M16 5v2h-2V5h2zm-4 4V7h2v2h-2zm-2 2V9h2v2h-2zm0 2H8v-2h2v2zm2 2v-2h-2v2h2zm0 0h2v2h-2v-2zm4 4v-2h-2v2h2z'/></svg>");
 }
 
-.tlb-root[data-theme='retro'] .tlb-pv__nav--r {
+.tlb-root .tlb-pv__nav--r {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'><path d='M8 5v2h2V5H8zm4 4V7h-2v2h2zm2 2V9h-2v2h2zm0 2h2v-2h-2v2zm-2 2v-2h2v2h-2zm0 0h-2v2h2v-2zm-4 4v-2h2v2H8z'/></svg>");
 }
 
 /* —— chip:小實體標籤 —— */
-.tlb-root[data-theme='retro'] .tlb-tagchip {
+.tlb-root .tlb-tagchip {
   border-color: var(--tlb-line);
   background: var(--tlb-surface-2);
 }
@@ -618,11 +609,11 @@
 /* —— GenPanel:奶油底上的白色硬卡紙 + 淡紫卡帶標題條 —— */
 
 /* 左列每個分區即一張卡帶;gap 改由各卡 margin-bottom 控制,便於縫卡 */
-.tlb-root[data-theme='retro'] .tlb-gen__prompts {
+.tlb-root .tlb-gen__prompts {
   gap: 0;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div {
+.tlb-root .tlb-gen__prompts > div {
   background: var(--tlb-surface);
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius);
@@ -633,19 +624,19 @@
 }
 
 /* 畫師串「預設列 + 輸入框」縫成同一張卡:上半去底框、下半去頂框 */
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:nth-child(1) {
+.tlb-root .tlb-gen__prompts > div:nth-child(1) {
   border-radius: var(--tlb-radius) var(--tlb-radius) 0 0;
   border-bottom: none;
   margin-bottom: 0;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:nth-child(2) {
+.tlb-root .tlb-gen__prompts > div:nth-child(2) {
   border-radius: 0 0 var(--tlb-radius) var(--tlb-radius);
   border-top: none;
 }
 
 /* 卡內「畫師串輸入框」改小節文字列,不再是滿版淡紫條 */
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:nth-child(2) > .tlb-label {
+.tlb-root .tlb-gen__prompts > div:nth-child(2) > .tlb-label {
   background: transparent;
   border-bottom: none;
   padding: 5px 10px 0;
@@ -653,8 +644,8 @@
 }
 
 /* 標題列內的操作鈕:常駐小白框方塊(對齊 Google deck-btn) */
-.tlb-root[data-theme='retro'] .tlb-gen__cardhead .tlb-ia,
-.tlb-root[data-theme='retro'] .tlb-gen__subhead .tlb-ia {
+.tlb-root .tlb-gen__cardhead .tlb-ia,
+.tlb-root .tlb-gen__subhead .tlb-ia {
   position: static;
   top: auto;
   right: auto;
@@ -672,8 +663,8 @@
   transform: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__cardhead .tlb-ia__btn,
-.tlb-root[data-theme='retro'] .tlb-gen__subhead .tlb-ia__btn {
+.tlb-root .tlb-gen__cardhead .tlb-ia__btn,
+.tlb-root .tlb-gen__subhead .tlb-ia__btn {
   width: 22px;
   height: 20px;
   border: 1px solid var(--tlb-stroke);
@@ -683,43 +674,43 @@
   box-shadow: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__cardhead .tlb-ia__btn:hover,
-.tlb-root[data-theme='retro'] .tlb-gen__subhead .tlb-ia__btn:hover {
+.tlb-root .tlb-gen__cardhead .tlb-ia__btn:hover,
+.tlb-root .tlb-gen__subhead .tlb-ia__btn:hover {
   background: var(--tlb-cream-hover);
   border-color: var(--tlb-purple);
   color: var(--tlb-purple-text);
 }
 
 /* 小節文字列的操作鈕不用紫底標題條的視覺重量 */
-.tlb-root[data-theme='retro'] .tlb-gen__subhead .tlb-ia__btn {
+.tlb-root .tlb-gen__subhead .tlb-ia__btn {
   width: 20px;
   height: 18px;
 }
 
 /* 卡內正文留 10px;標題條滿版出血 */
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-row,
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-fieldbox,
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-gen__quickrow {
+.tlb-root .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-row,
+.tlb-root .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-fieldbox,
+.tlb-root .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-gen__quickrow {
   margin-left: 10px;
   margin-right: 10px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-row {
+.tlb-root .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-row {
   margin-top: 10px;
   margin-bottom: 10px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-fieldbox {
+.tlb-root .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-fieldbox {
   margin-top: 8px;
   margin-bottom: 10px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-gen__quickrow {
+.tlb-root .tlb-gen__prompts > div:not(.tlb-gen__negative) > .tlb-gen__quickrow {
   margin-top: 0;
   margin-bottom: 10px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div > .tlb-label {
+.tlb-root .tlb-gen__prompts > div > .tlb-label {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -734,31 +725,31 @@
   color: var(--tlb-ink);
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div > .tlb-label .tlb-hint {
+.tlb-root .tlb-gen__prompts > div > .tlb-label .tlb-hint {
   font-weight: 500;
 }
 
 /* 間距微調:畫師串框收緊 1/3;正面詞快捷列上移(上緣 0、下緣 10,卡片高度不變) */
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:nth-child(2) > .tlb-fieldbox {
+.tlb-root .tlb-gen__prompts > div:nth-child(2) > .tlb-fieldbox {
   margin-top: 3px;
   margin-bottom: 7px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:nth-child(3) > .tlb-fieldbox {
+.tlb-root .tlb-gen__prompts > div:nth-child(3) > .tlb-fieldbox {
   margin-bottom: 0;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__prompts > div:nth-child(3) > .tlb-gen__quickrow {
+.tlb-root .tlb-gen__prompts > div:nth-child(3) > .tlb-gen__quickrow {
   margin-top: 0;
   margin-bottom: 10px;
 }
 
 /* 負面提示詞:整格卡帶,折疊條即標題列 */
-.tlb-root[data-theme='retro'] .tlb-gen__negative {
+.tlb-root .tlb-gen__negative {
   padding: 0;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__negtoggle {
+.tlb-root .tlb-gen__negtoggle {
   justify-content: flex-start; /* 蓋掉 tlb-label 的 space-between,說明句緊貼標題 */
   margin: 0;
   padding: 4px 10px;
@@ -767,52 +758,52 @@
   font-size: 12px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__negtoggle .tlb-gen__negarrow {
+.tlb-root .tlb-gen__negtoggle .tlb-gen__negarrow {
   margin-left: auto;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__negative:has(.tlb-fieldbox) .tlb-gen__negtoggle {
+.tlb-root .tlb-gen__negative:has(.tlb-fieldbox) .tlb-gen__negtoggle {
   border-bottom-color: var(--tlb-stroke);
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__negative .tlb-fieldbox {
+.tlb-root .tlb-gen__negative .tlb-fieldbox {
   padding: 10px;
 }
 
 /* 右列:Vibe / 生圖參數卡片硬化 + 淡紫標題條 */
-.tlb-root[data-theme='retro'] .tlb-vibe,
-.tlb-root[data-theme='retro'] .tlb-gen__sidecard {
+.tlb-root .tlb-vibe,
+.tlb-root .tlb-gen__sidecard {
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius);
   box-shadow: var(--tlb-shadow-card);
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__head {
+.tlb-root .tlb-vibe__head {
   padding: 4px 10px;
   background: var(--tlb-purple-soft);
   border-bottom: 1.5px solid var(--tlb-stroke);
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__title {
+.tlb-root .tlb-vibe__title {
   font-size: 12px;
   font-weight: 700;
   color: var(--tlb-ink);
 }
 
 /* 第一行與標題條距離對齊畫師串預設(10px,不額外疊加 margin) */
-.tlb-root[data-theme='retro'] .tlb-vibe__groupbar {
+.tlb-root .tlb-vibe__groupbar {
   margin-top: 0;
   padding: 10px 10px 0;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__list {
+.tlb-root .tlb-vibe__list {
   padding: 10px;
 }
 
 /* 生圖參數折疊條:與負面詞同款,hover 不改變框線粗細/底色 */
-.tlb-root[data-theme='retro'] .tlb-gen__sidecard-head,
-.tlb-root[data-theme='retro'] .tlb-gen__sidecard-head:hover:not(:disabled),
-.tlb-root[data-theme='retro'] .tlb-gen__sidecard-head:focus-visible {
+.tlb-root .tlb-gen__sidecard-head,
+.tlb-root .tlb-gen__sidecard-head:hover:not(:disabled),
+.tlb-root .tlb-gen__sidecard-head:focus-visible {
   min-height: 26px;
   padding: 4px 10px;
   background: var(--tlb-purple-soft);
@@ -826,17 +817,17 @@
   transform: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__sidecard:has(.tlb-gen__params) .tlb-gen__sidecard-head,
-.tlb-root[data-theme='retro'] .tlb-gen__sidecard:has(.tlb-gen__params) .tlb-gen__sidecard-head:hover:not(:disabled) {
+.tlb-root .tlb-gen__sidecard:has(.tlb-gen__params) .tlb-gen__sidecard-head,
+.tlb-root .tlb-gen__sidecard:has(.tlb-gen__params) .tlb-gen__sidecard-head:hover:not(:disabled) {
   border-bottom-color: var(--tlb-stroke);
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__params {
+.tlb-root .tlb-gen__params {
   padding: 10px;
 }
 
 /* 快捷 tag:奶油平涂小方塊,英文走像素體 */
-.tlb-root[data-theme='retro'] .tlb-gen__quick .tlb-chip {
+.tlb-root .tlb-gen__quick .tlb-chip {
   height: 25px;
   padding: 0 10px;
   border: none;
@@ -849,7 +840,7 @@
   box-shadow: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__quick .tlb-chip:hover {
+.tlb-root .tlb-gen__quick .tlb-chip:hover {
   background: var(--tlb-cream-hover);
   border: none;
   color: var(--tlb-ink);
@@ -858,18 +849,18 @@
 }
 
 /* AI / 生成 雙主按鈕:暖陶褐 + 深陶 */
-.tlb-root[data-theme='retro'] .tlb-gen__gobtn {
+.tlb-root .tlb-gen__gobtn {
   width: 34px;
   height: 30px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__quickrow .tlb-gen__gobtn:last-child {
+.tlb-root .tlb-gen__quickrow .tlb-gen__gobtn:last-child {
   background: var(--tlb-purple-deep);
   border-color: var(--tlb-stroke);
 }
 
 /* 預覽區:白框無陰影 */
-.tlb-root[data-theme='retro'] .tlb-gen__preview {
+.tlb-root .tlb-gen__preview {
   margin-top: -5px; /* .tlb-gen gap 11px 減半 */
   background: var(--tlb-surface);
   border: 1.5px solid var(--tlb-stroke);
@@ -877,7 +868,7 @@
   box-shadow: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__badge {
+.tlb-root .tlb-gen__badge {
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius-sm);
   background: var(--tlb-surface);
@@ -888,7 +879,7 @@
   padding: 1px 7px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__nav {
+.tlb-root .tlb-gen__nav {
   width: 36px;
   height: 36px;
   border: none;
@@ -901,26 +892,26 @@
   opacity: 0.8;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__nav .tlb-icon {
+.tlb-root .tlb-gen__nav .tlb-icon {
   display: none;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__nav:hover {
+.tlb-root .tlb-gen__nav:hover {
   background-color: transparent;
   opacity: 1;
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__nav--l {
+.tlb-root .tlb-gen__nav--l {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'><path d='M16 5v2h-2V5h2zm-4 4V7h2v2h-2zm-2 2V9h2v2h-2zm0 2H8v-2h2v2zm2 2v-2h-2v2h2zm0 0h2v2h-2v-2zm4 4v-2h-2v2h2z'/></svg>");
 }
 
-.tlb-root[data-theme='retro'] .tlb-gen__nav--r {
+.tlb-root .tlb-gen__nav--r {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'><path d='M8 5v2h2V5H8zm4 4V7h-2v2h2zm2 2V9h-2v2h2zm0 2h2v-2h-2v2zm-2 2v-2h2v2h-2zm0 0h-2v2h2v-2zm-4 4v-2h2v2H8z'/></svg>");
 }
 
 /* —— Vibe:上傳框沿用基底虛線磚;項目卡奶油底 + 深色硬陰影 —— */
 /* 網格重排:大縮圖貼左滿高,勾選框與名稱同行 */
-.tlb-root[data-theme='retro'] .tlb-vibe__item {
+.tlb-root .tlb-vibe__item {
   display: grid;
   grid-template-columns: 64px 1fr;
   column-gap: 8px;
@@ -933,12 +924,12 @@
   box-shadow: var(--tlb-shadow-card);
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__main {
+.tlb-root .tlb-vibe__main {
   display: contents;
   gap: 0;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__thumbimg {
+.tlb-root .tlb-vibe__thumbimg {
   grid-column: 1;
   grid-row: 1 / span 3;
   align-self: start;
@@ -950,7 +941,7 @@
   border-radius: 2px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__enable {
+.tlb-root .tlb-vibe__enable {
   position: relative;
   z-index: 2; /* 避免被同行名稱層蓋住導致點不到 */
   grid-column: 2;
@@ -968,7 +959,7 @@
   cursor: pointer;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__enable:checked {
+.tlb-root .tlb-vibe__enable:checked {
   border-color: var(--tlb-purple);
   background-color: var(--tlb-purple);
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233E3527' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6 9 17l-5-5'/></svg>");
@@ -977,7 +968,7 @@
   background-size: 12px 12px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__name {
+.tlb-root .tlb-vibe__name {
   grid-column: 2;
   grid-row: 1;
   align-self: center;
@@ -988,19 +979,19 @@
   font-weight: 700;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__row {
+.tlb-root .tlb-vibe__row {
   grid-column: 2;
   align-items: center;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__row label {
+.tlb-root .tlb-vibe__row label {
   color: var(--tlb-ink);
   font-size: 12px;
   font-weight: 700;
 }
 
 /* 所有滑桿統一 vibe 款:4px 細軸 + 4×12 陶色細長滑塊 */
-.tlb-root[data-theme='retro'] input[type='range'] {
+.tlb-root input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
@@ -1012,7 +1003,7 @@
   cursor: ew-resize;
 }
 
-.tlb-root[data-theme='retro'] input[type='range']::-webkit-slider-thumb {
+.tlb-root input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 4px;
@@ -1020,25 +1011,25 @@
   border: 1px solid var(--tlb-stroke);
   border-radius: 1px;
   background: var(--tlb-purple);
-  box-shadow: 1px 1px 0 rgba(107, 92, 72, 0.35);
+  box-shadow: 1px 1px 0 color-mix(in srgb, var(--tlb-stroke) 45%, transparent);
   cursor: ew-resize;
 }
 
-.tlb-root[data-theme='retro'] input[type='range']::-moz-range-thumb {
+.tlb-root input[type='range']::-moz-range-thumb {
   width: 4px;
   height: 12px;
   border: 1px solid var(--tlb-stroke);
   border-radius: 1px;
   background: var(--tlb-purple);
-  box-shadow: 1px 1px 0 rgba(107, 92, 72, 0.35);
+  box-shadow: 1px 1px 0 color-mix(in srgb, var(--tlb-stroke) 45%, transparent);
   cursor: ew-resize;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__val {
+.tlb-root .tlb-vibe__val {
   width: 44px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__val-input {
+.tlb-root .tlb-vibe__val-input {
   height: 22px;
   padding: 0 4px;
   font-family: var(--tlb-font-pixel);
@@ -1049,115 +1040,115 @@
   background: var(--tlb-surface);
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__val-input:hover,
-.tlb-root[data-theme='retro'] .tlb-vibe__val-input:focus {
+.tlb-root .tlb-vibe__val-input:hover,
+.tlb-root .tlb-vibe__val-input:focus {
   border-color: var(--tlb-stroke);
   background: var(--tlb-surface);
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__info-sel .tlb-selectdd__control {
+.tlb-root .tlb-vibe__info-sel .tlb-selectdd__control {
   height: 22px;
   padding: 0 6px;
   font-size: 10.5px;
 }
 
 /* OK 狀態:無底色像素紫字(pending/off 保留淺膠囊以便辨識) */
-.tlb-root[data-theme='retro'] .tlb-vibe__badge {
+.tlb-root .tlb-vibe__badge {
   font-family: var(--tlb-font-pixel);
   font-weight: 700;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__badge--ok {
+.tlb-root .tlb-vibe__badge--ok {
   padding: 0 2px;
   border-radius: 0;
   background: transparent;
   color: var(--tlb-purple-text);
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__status {
+.tlb-root .tlb-vibe__status {
   background: transparent;
   font-size: 11px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__enable {
+.tlb-root .tlb-vibe__enable {
   accent-color: var(--tlb-purple);
 }
 
 /* 字級與字重:標籤/按鈕 700,正文維持一般黑體(不套用像素體) */
-.tlb-root[data-theme='retro'] .tlb-label {
+.tlb-root .tlb-label {
   font-weight: 700;
 }
 
-.tlb-root[data-theme='retro'] .tlb-btn {
+.tlb-root .tlb-btn {
   font-weight: 700;
 }
 
-.tlb-root[data-theme='retro'] .tlb-textarea,
-.tlb-root[data-theme='retro'] .tlb-input {
+.tlb-root .tlb-textarea,
+.tlb-root .tlb-input {
   font-family: var(--tlb-font-sans);
   font-size: 12.5px;
   font-weight: 500;
 }
 
-.tlb-root[data-theme='retro'] .tlb-select {
+.tlb-root .tlb-select {
   font-family: var(--tlb-font-sans);
   font-size: 12px;
 }
 
 /* —— 設置頁「常用資源」:標題深色、網名暖灰、說明句咖色 —— */
-.tlb-root[data-theme='retro'] .tlb-set__links-title {
+.tlb-root .tlb-set__links-title {
   color: var(--tlb-ink);
   font-weight: 700;
 }
 
-.tlb-root[data-theme='retro'] .tlb-set__link {
+.tlb-root .tlb-set__link {
   color: var(--tlb-ink-soft);
   font-weight: 600;
 }
 
-.tlb-root[data-theme='retro'] .tlb-set__link:hover {
+.tlb-root .tlb-set__link:hover {
   color: var(--tlb-purple-text);
 }
 
-.tlb-root[data-theme='retro'] .tlb-set__linklist .tlb-hint {
+.tlb-root .tlb-set__linklist .tlb-hint {
   font-size: 11px;
-  color: rgba(107, 92, 72, 0.8);
+  color: var(--tlb-ink-soft);
 }
 
 /* 畫廊標籤 chip:奶油底無邊線 */
-.tlb-root[data-theme='retro'] .tlb-gal__tag {
+.tlb-root .tlb-gal__tag {
   border-color: transparent;
   border-radius: 2px;
   background: var(--tlb-cream);
 }
 
 /* —— 自製下拉選單:硬邊奶油底、實影、陶色選中 —— */
-.tlb-root[data-theme='retro'] .tlb-selectdd__menu {
+.tlb-root .tlb-selectdd__menu {
   padding: 4px;
   background: var(--tlb-surface);
   border: 1.5px solid var(--tlb-stroke);
   border-radius: 4px;
-  box-shadow: 3px 3px 0 rgba(92, 79, 63, 0.85);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--tlb-stroke) 85%, transparent);
 }
 
-.tlb-root[data-theme='retro'] .tlb-selectdd__item {
+.tlb-root .tlb-selectdd__item {
   border-radius: 2px;
   font-size: 12px;
 }
 
-.tlb-root[data-theme='retro'] .tlb-selectdd__item:hover {
+.tlb-root .tlb-selectdd__item:hover {
   background: var(--tlb-purple-soft);
   color: var(--tlb-ink);
 }
 
-.tlb-root[data-theme='retro'] .tlb-selectdd__item.is-active {
+.tlb-root .tlb-selectdd__item.is-active {
   background: var(--tlb-purple);
   color: var(--tlb-purple-ink);
 }
 
 /* —— 手機安全區媒體查詢沿用 FloatingPanel 規則,僅覆蓋框線圓角 —— */
 @media (max-width: 760px), (pointer: coarse) and (max-height: 480px) {
-  .tlb-root[data-theme='retro'] .tlb-panel {
+  .tlb-root .tlb-panel {
     border-radius: var(--tlb-radius-win);
   }
 }
@@ -1179,7 +1170,22 @@
   --tlb-danger-soft: #d96b6b26;
   --tlb-warning: #d9a441;
   --tlb-overlay: #00000073;
-  --tlb-shadow: 0 18px 48px -20px var(--SmartThemeShadowColor, #00000038),
-    0 4px 12px -6px var(--SmartThemeShadowColor, #0000001a);
+  --tlb-shadow: 5px 5px 0 color-mix(in srgb, var(--tlb-ink) 70%, transparent),
+    0 18px 48px -20px var(--SmartThemeShadowColor, #00000038);
+
+  /* —— retro 硬框設計語言令牌:全部由宿主色派生,不帶暖陶固定色 —— */
+  --tlb-stroke: color-mix(in srgb, var(--tlb-line-strong) 60%, var(--tlb-ink));
+  --tlb-purple: var(--tlb-accent);
+  --tlb-purple-deep: color-mix(in srgb, var(--tlb-accent) 75%, var(--tlb-ink));
+  --tlb-purple-soft: var(--tlb-accent-soft);
+  --tlb-purple-text: var(--tlb-accent);
+  --tlb-purple-ink: var(--tlb-accent-ink);
+  --tlb-cream: var(--tlb-surface-2);
+  --tlb-cream-hover: color-mix(in srgb, var(--tlb-surface-2) 92%, var(--tlb-ink));
+  --tlb-cream-active: color-mix(in srgb, var(--tlb-surface-2) 84%, var(--tlb-ink));
+  --tlb-cream-stroke: var(--tlb-line);
+  --tlb-shadow-win: 5px 5px 0 color-mix(in srgb, var(--tlb-ink) 70%, transparent);
+  --tlb-shadow-card: 2.5px 2.5px 0 color-mix(in srgb, var(--tlb-ink) 42%, transparent);
+  --tlb-shadow-btn: 2px 2px 0 color-mix(in srgb, var(--tlb-ink) 42%, transparent);
 }
 
