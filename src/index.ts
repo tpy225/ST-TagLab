@@ -61,6 +61,12 @@ function mount(): void {
   link.href = new URL('./index.css', import.meta.url).href;
   shadow.appendChild(link);
 
+  // 復古主題使用的像素字體(僅拉丁字形;中文自動回落系統字體)
+  const fontLink = document.createElement('link');
+  fontLink.rel = 'stylesheet';
+  fontLink.href = 'https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap';
+  shadow.appendChild(fontLink);
+
   const container = document.createElement('div');
   shadow.appendChild(container);
 
