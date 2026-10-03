@@ -977,9 +977,9 @@
 .tlb-root[data-theme='retro'] .tlb-vibe__thumbimg {
   grid-column: 1;
   grid-row: 1 / span 3;
-  align-self: start; /* 強制固定高度,頂緣齊勾選框 */
-  width: 60px !important;
-  height: 60px !important;
+  align-self: start; /* 固定高度,寬度隨原圖比例 */
+  width: auto !important;
+  height: 65px !important;
   min-height: 0;
   object-fit: cover;
   border: 1px solid var(--tlb-stroke);
@@ -1143,10 +1143,15 @@
   font-size: 12px;
 }
 
-/* —— 設置頁「常用資源」:網名深色、說明句白色 —— */
-.tlb-root[data-theme='retro'] .tlb-set__link {
+/* —— 設置頁「常用資源」:標題深色、網名暖灰、說明句咖色 —— */
+.tlb-root[data-theme='retro'] .tlb-set__links-title {
   color: var(--tlb-ink);
   font-weight: 700;
+}
+
+.tlb-root[data-theme='retro'] .tlb-set__link {
+  color: var(--tlb-ink-soft);
+  font-weight: 600;
 }
 
 .tlb-root[data-theme='retro'] .tlb-set__link:hover {
@@ -1154,7 +1159,14 @@
 }
 
 .tlb-root[data-theme='retro'] .tlb-set__linklist .tlb-hint {
-  color: #ffffff;
+  color: var(--tlb-line-strong);
+}
+
+/* 畫廊標籤 chip:奶油底無邊線 */
+.tlb-root[data-theme='retro'] .tlb-gal__tag {
+  border-color: transparent;
+  border-radius: 2px;
+  background: var(--tlb-cream);
 }
 
 /* —— 手機安全區媒體查詢沿用 FloatingPanel 規則,僅覆蓋框線圓角 —— */

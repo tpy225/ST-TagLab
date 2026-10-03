@@ -41,6 +41,15 @@ watch(shown, items => {
   selected.value = selected.value.filter(id => ids.has(id));
 });
 
+/** 图卡显示标签:搜索命中的排前,其余保持原顺序;默认显示前 3 个,hover 展开全部。 */
+function displayTags(item: { tags?: string[] }): string[] {
+  const tags = item.tags ?? [];
+  const q = tagQuery.value.trim().toLowerCase();
+  if (!q) return tags;
+  const hit = tags.filter(t => t.toLowerCase().includes(q));
+  return [...hit, ...tags.filter(t => !t.toLowerCase().includes(q))];
+}
+
 const picking = computed(() => mode.value !== 'view');
 const isSelected = (id: string): boolean => selected.value.includes(id);
 
@@ -343,8 +352,12 @@ function openBatchWatermark(): void {
         <img v-if="item.thumb || urls[item.id]" :src="item.thumb || urls[item.id]" alt="" loading="lazy" />
         <div v-else class="tlb-gal__ph"><Icon name="loader" spin /></div>
         <figcaption v-if="item.tags?.length" class="tlb-gal__cap">
-          <span v-for="t in item.tags.slice(0, 3)" :key="t" class="tlb-gal__tag">#{{ t }}</span>
-          <span v-if="item.tags.length > 3" class="tlb-gal__tag tlb-gal__tag--more">+{{ item.tags.length - 3 }}</span>
+          <span
+            v-for="(t, idx) in displayTags(item)"
+            :key="t"
+            class="tlb-gal__tag"
+            :class="{ 'tlb-gal__tag--extra': idx >= 3 }"
+          >#{{ t }}</span>
         </figcaption>
 
         <!-- 选中角标(仅选取模式) -->
@@ -570,15 +583,24 @@ function openBatchWatermark(): void {
 }
 
 .tlb-gal__tag {
+  flex: none;
   max-width: 100%;
+  padding: 0 5px;
+  border: 1px solid var(--tlb-line);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface-2);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.tlb-gal__tag--more {
-  flex: none;
-  opacity: 0.7;
+/* 超出前 3 个的标签默认隐藏,hover 图卡时全部展开 */
+.tlb-gal__tag--extra {
+  display: none;
+}
+
+.tlb-gal__cell:hover .tlb-gal__tag--extra {
+  display: inline-block;
 }
 
 /* 默认模式:hover 右上删除 */
