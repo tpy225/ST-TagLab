@@ -10,8 +10,8 @@ import { clampVibeStrength, OFFICIAL_ENDPOINT_ID } from '@/constants';
 import { newId, officialEndpoint, settings } from '@/state/settings';
 import {
   applySyncPayload,
-  fetchServerImageDataUrl,
   fetchServerText,
+  loadServerImageThumb,
   readExternalStore,
   str,
   type IncomingArtist,
@@ -137,7 +137,7 @@ async function loadBaibaiVibeData(dataPath: string, thumbnailPath = ''): Promise
   // 正文缩略图为空时,回落缩略图独立文件(thumbnailPath 为同源服务器路径)
   let thumbnail = str(d.thumbnail);
   if (!thumbnail && thumbnailPath && !thumbnailPath.startsWith(BAiBAI_IDB_PREFIX)) {
-    thumbnail = await fetchServerImageDataUrl(thumbnailPath);
+    thumbnail = await loadServerImageThumb(thumbnailPath);
   }
   return {
     image: str(d.image),
@@ -197,7 +197,7 @@ export async function syncFromBaibai(options: BaibaiSyncOptions = {}): Promise<B
     if (!name) continue;
     const previewPath = str(a.previewPath);
     onProgress?.('预览图', i + 1, theirsArtists.length);
-    const preview = previewPath ? await fetchServerImageDataUrl(previewPath) : '';
+    const preview = previewPath ? await loadServerImageThumb(previewPath) : '';
     artists.push({
       name,
       prompt: str(a.prompt),

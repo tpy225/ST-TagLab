@@ -1825,4 +1825,38 @@ label.tlb-vibe__groupbtn {
 .tlb-vibe__status--error {
   color: var(--tlb-danger);
 }
+
+/* —— 手機:主 grid 改單列,避免左右硬塞造成文字折行/按鈕裁切(即回報的「塌陷」) —— */
+@media (max-width: 760px), (pointer: coarse) and (max-height: 480px) {
+  .tlb-gen__top {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  /* Vibe 組列:下拉整行,6 顆按鈕獨立一行並可橫滑,不再被視口裁切 */
+  .tlb-vibe__groupbar {
+    flex-wrap: wrap;
+  }
+  .tlb-vibe__groupselect {
+    flex: 1 1 100%;
+  }
+  .tlb-vibe__groupbtns {
+    flex: 1 1 100%;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tlb-vibe__groupbtns::-webkit-scrollbar {
+    display: none;
+  }
+  .tlb-vibe__groupbtn {
+    flex: none;
+  }
+
+  /* 預覽框窄屏少占縱向空間 */
+  .tlb-gen__preview {
+    min-height: 280px;
+  }
+}
 </style>

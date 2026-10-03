@@ -72,6 +72,8 @@ export interface SyncReport {
   artistsSkipped: number;
   previewsAdded: number;
   previewsUpdated: number;
+  /** 來源帶了預覽圖但載入/壓縮失敗的條數。 */
+  previewsFailed: number;
   vibesImported: number;
   vibesUpdated: number;
   vibesSkipped: number;
@@ -88,6 +90,7 @@ export function emptyReport(): SyncReport {
     artistsSkipped: 0,
     previewsAdded: 0,
     previewsUpdated: 0,
+    previewsFailed: 0,
     vibesImported: 0,
     vibesUpdated: 0,
     vibesSkipped: 0,
@@ -177,6 +180,34 @@ export async function fetchServerImageDataUrl(path: string): Promise<string> {
   const blob = await resp.blob();
   if (!blob || blob.size === 0) return '';
   return blobToDataUrl(blob);
+}
+
+/**
+ * 載入伺服器圖片並統一壓成 256px jpeg dataURL。
+ * 先 fetch 位元組(部分宿主環境 fetch 被 CSP/權限攔截會回 null);
+ * 失敗則退回直接讓 Image 載入同網址進 canvas —— 柏宝绘自己就是用 <img> 顯示,
+ * 只要它能顯示,這個路徑就能畫進 canvas(同源不污染)。
+ */
+export async function loadServerImageThumb(path: string): Promise<string> {
+  if (!path) return '';
+  // 同源相對路徑候選:原樣、補根斜線(宿主頁面不在根路徑時相對解析會歪)
+  const candidates = [path];
+  if (/^[\w.-]+(\/|\\)/.test(path) && !path.startsWith('/')) candidates.push(`/${path}`);
+  for (const p of candidates) {
+    const direct = await fetchServerImageDataUrl(p);
+    if (direct) {
+      const t = await makeThumbnail(direct);
+      if (t) return t;
+    }
+    // fetch 拿不到就照柏宝绘自己的方式用 <img> 載入(同源可畫進 canvas)
+    try {
+      const t = await makeThumbnail(p);
+      if (t) return t;
+    } catch {
+      /* 試下一個候選 */
+    }
+  }
+  return '';
 }
 
 /* ════════════════════════════════ 跨插件 IndexedDB 直读 ════════════════════════════════ */
@@ -303,16 +334,22 @@ function firstInfoExtracted(encodings: TlbVibeEncodings): number {
 
 /* ════════════════════════════════ 合并引擎 ════════════════════════════════ */
 
-async function storeArtistPreview(artistId: string, raw: string, hadPreview: boolean, r: SyncReport): Promise<void> {
+async function storeArtistPreview(artistId: string, raw: string, hadPreview: boolean, r: SyncReport): Promise<boolean> {
   try {
     // 各家原图尺寸不一,统一压到 256px jpeg(对比页网格够用,IndexedDB 也轻)
     const url = await makeThumbnail(raw);
-    if (!url) return;
+    if (!url) {
+      r.previewsFailed++;
+      return false;
+    }
     await setArtistPreview(artistId, url);
     if (hadPreview) r.previewsUpdated++;
     else r.previewsAdded++;
+    return true;
   } catch (e) {
+    r.previewsFailed++;
     console.warn('[TagLab] 预览图同步失败', artistId, e);
+    return false;
   }
 }
 

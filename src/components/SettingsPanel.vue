@@ -51,8 +51,11 @@ function formatSyncReport(r: SyncReport, endpoints?: number): string {
   const parts: string[] = [];
   if (typeof endpoints === 'number') parts.push(`接入点 ${endpoints} 条`);
   parts.push(`画师串 新增 ${r.artistsImported}·覆盖 ${r.artistsUpdated}·相同 ${r.artistsSkipped}`);
-  if (r.previewsAdded || r.previewsUpdated) {
-    parts.push(`预览图 新增 ${r.previewsAdded}·更新 ${r.previewsUpdated}`);
+  if (r.previewsAdded || r.previewsUpdated || r.previewsFailed) {
+    parts.push(
+      `预览图 新增 ${r.previewsAdded}·更新 ${r.previewsUpdated}`
+        + (r.previewsFailed ? `·取不到 ${r.previewsFailed}` : ''),
+    );
   }
   parts.push(
     `vibe 新增 ${r.vibesImported}·补全 ${r.vibesUpdated}·相同 ${r.vibesSkipped}`
