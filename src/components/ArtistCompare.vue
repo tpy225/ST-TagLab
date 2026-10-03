@@ -398,7 +398,18 @@ function onResDragEnd(): void {
           :class="{ 'tlb-lib__card--on': isSelected(a.id) }"
           @click="onCardClick(a)"
         >
-          <span class="tlb-lib__cardname" :title="a.name">{{ a.name }}</span>
+          <span class="tlb-lib__cardname" :title="a.name">
+            <span class="tlb-lib__cardname-text">{{ a.name }}</span>
+            <!-- 默认模式:导出 / 删除 常驻标题列右侧 -->
+            <span v-if="!picking" class="tlb-lib__actions">
+              <button class="tlb-lib__cardbtn" title="导出" @click.stop="askExport([a.id])">
+                <Icon name="export" :size="12" />
+              </button>
+              <button class="tlb-lib__cardbtn tlb-lib__cardbtn--danger" title="删除" @click.stop="removeOne(a.id)">
+                <Icon name="trash" :size="12" />
+              </button>
+            </span>
+          </span>
           <span class="tlb-lib__media">
             <img v-if="previewSrc(a.id)" class="tlb-lib__img" :src="previewSrc(a.id)" :alt="a.name" />
             <span v-else class="tlb-lib__noimg">无预览图</span>
@@ -407,16 +418,6 @@ function onResDragEnd(): void {
           <!-- 选中角标(仅选取模式) -->
           <span v-if="picking && isSelected(a.id)" class="tlb-lib__pickbadge">
             <Icon name="check" :size="13" />
-          </span>
-
-          <!-- 默认模式:hover 导出 / 删除 -->
-          <span v-if="!picking" class="tlb-lib__actions">
-            <button class="tlb-lib__cardbtn" title="导出" @click.stop="askExport([a.id])">
-              <Icon name="export" :size="13" />
-            </button>
-            <button class="tlb-lib__cardbtn tlb-lib__cardbtn--danger" title="删除" @click.stop="removeOne(a.id)">
-              <Icon name="trash" :size="13" />
-            </button>
           </span>
         </figure>
         <p v-if="!settings.artistPresets.length" class="tlb-hint tlb-lib__picks-empty">

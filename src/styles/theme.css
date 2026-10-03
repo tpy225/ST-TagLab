@@ -279,14 +279,22 @@
     inset -1px -1px 0 rgba(92, 79, 63, 0.04);
 }
 
-/* 所有輸入框:hover / :focus 都不變邊框色(僅鍵盤聚焦保留外輪廓) */
+/* 所有輸入框:hover / :focus 都不變邊框色、不出外輪廓(含鍵盤 Tab 聚焦) */
 .tlb-root[data-theme='retro'] .tlb-input:hover,
 .tlb-root[data-theme='retro'] .tlb-select:hover,
 .tlb-root[data-theme='retro'] .tlb-textarea:hover,
 .tlb-root[data-theme='retro'] .tlb-input:focus,
 .tlb-root[data-theme='retro'] .tlb-select:focus,
-.tlb-root[data-theme='retro'] .tlb-textarea:focus {
+.tlb-root[data-theme='retro'] .tlb-textarea:focus,
+.tlb-root[data-theme='retro'] .tlb-input:focus-visible,
+.tlb-root[data-theme='retro'] .tlb-select:focus-visible,
+.tlb-root[data-theme='retro'] .tlb-textarea:focus-visible,
+.tlb-root[data-theme='retro'] .tlb-vibe__val-input:focus,
+.tlb-root[data-theme='retro'] .tlb-vibe__val-input:focus-visible,
+.tlb-root[data-theme='retro'] .tlb-lib__search-input:focus,
+.tlb-root[data-theme='retro'] .tlb-lib__search-input:focus-visible {
   border-color: var(--tlb-line-strong);
+  outline: none;
 }
 
 .tlb-root[data-theme='retro'] .tlb-select {
@@ -322,14 +330,12 @@
   background: var(--tlb-cream);
 }
 
-/* —— 畫師庫縮圖卡:滿版標題條 + 內框圖(參考設計稿) —— */
+/* —— 畫師庫縮圖卡:滿版標題條(含操作鈕) + 內框圖(參考設計稿) —— */
 .tlb-root[data-theme='retro'] .tlb-lib__picks {
-  counter-reset: tlb-card;
   gap: 12px;
 }
 
 .tlb-root[data-theme='retro'] .tlb-lib__card {
-  counter-increment: tlb-card;
   gap: 6px;
   padding: 6px;
   border: 1.5px solid var(--tlb-stroke);
@@ -352,10 +358,9 @@
 .tlb-root[data-theme='retro'] .tlb-lib__cardname {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 6px;
   margin: -6px -6px 0;
-  padding: 4px 8px;
+  padding: 3px 6px 3px 8px;
   border-bottom: 1.5px solid var(--tlb-stroke);
   background: var(--tlb-purple-soft);
   font-family: var(--tlb-font-pixel);
@@ -365,10 +370,12 @@
   color: var(--tlb-ink);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__cardname::after {
-  content: '#' counter(tlb-card, decimal-leading-zero);
-  flex: none;
-  color: var(--tlb-ink-soft);
+.tlb-root[data-theme='retro'] .tlb-lib__cardname-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tlb-root[data-theme='retro'] .tlb-lib__card--on .tlb-lib__cardname {
@@ -376,8 +383,14 @@
   color: var(--tlb-purple-ink);
 }
 
-.tlb-root[data-theme='retro'] .tlb-lib__card--on .tlb-lib__cardname::after {
-  color: var(--tlb-purple-ink);
+/* 操作鈕常駐標題列右側(覆寫基底的絕定位 hover 浮現) */
+.tlb-root[data-theme='retro'] .tlb-lib__actions {
+  position: static;
+  display: flex;
+  flex: none;
+  gap: 3px;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .tlb-root[data-theme='retro'] .tlb-lib__media {
@@ -408,19 +421,21 @@
   box-shadow: 1px 1px 0 rgba(107, 92, 72, 0.4);
 }
 
-/* 卡上操作鈕:奶白方角硬邊 */
+/* 卡上操作鈕:白底細邊方塊、無陰影(同生成頁標題列的複製/清空) */
 .tlb-root[data-theme='retro'] .tlb-lib__cardbtn {
-  width: 24px;
-  height: 24px;
-  border: 1.5px solid var(--tlb-stroke);
-  border-radius: var(--tlb-radius-sm);
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--tlb-stroke);
+  border-radius: 2px;
   background: var(--tlb-surface);
   color: var(--tlb-ink);
-  box-shadow: 1.5px 1.5px 0 rgba(107, 92, 72, 0.5);
+  box-shadow: none;
 }
 
 .tlb-root[data-theme='retro'] .tlb-lib__cardbtn:hover {
-  background: var(--tlb-cream);
+  background: var(--tlb-cream-hover);
+  border-color: var(--tlb-purple);
   color: var(--tlb-purple-text);
 }
 
@@ -819,8 +834,11 @@
 .tlb-root[data-theme='retro'] .tlb-vibe__thumbimg {
   grid-column: 1;
   grid-row: 1 / span 3;
+  align-self: stretch; /* 上齊勾選框頂、下齊下拉框底 */
   width: 64px;
-  height: 64px;
+  height: auto;
+  min-height: 0;
+  object-fit: cover;
   border: 1px solid var(--tlb-stroke);
   border-radius: 2px;
 }

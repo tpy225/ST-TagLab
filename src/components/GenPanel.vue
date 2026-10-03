@@ -1085,11 +1085,11 @@ async function onVibeImport(e: Event): Promise<void> {
   position: relative;
 }
 
-/* 負面詞:僅保留單顆懸浮半透明放大鈕(右下角、resize 抓取區上方),hover/聚焦浮現 */
+/* 負面詞:僅保留單顆懸浮半透明放大鈕(右上角內縮,避免貼邊被裁切),hover/聚焦浮現 */
 .tlb-gen__negzoom {
   position: absolute;
-  right: 8px;
-  bottom: 26px;
+  right: 10px;
+  top: 6px;
   z-index: 2;
   width: 22px;
   height: 22px;
