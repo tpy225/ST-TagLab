@@ -133,6 +133,22 @@ function removeOne(id: string): void {
 
 const confirmDeleteOpen = ref(false);
 
+/** 卡片內聯二次確認:記錄待刪畫師 id */
+const cardConfirmId = ref<string | null>(null);
+
+function askCardDelete(id: string): void {
+  cardConfirmId.value = id;
+}
+
+function cancelCardDelete(): void {
+  cardConfirmId.value = null;
+}
+
+function confirmCardDelete(): void {
+  if (cardConfirmId.value) removeOne(cardConfirmId.value);
+  cardConfirmId.value = null;
+}
+
 function askBatchDelete(): void {
   if (selected.value.length) confirmDeleteOpen.value = true;
 }
@@ -400,14 +416,18 @@ function onResDragEnd(): void {
         >
           <span class="tlb-lib__cardname" :title="a.name">
             <span class="tlb-lib__cardname-text">{{ a.name }}</span>
-            <!-- 默认模式:导出 / 删除 常驻标题列右侧 -->
-            <span v-if="!picking" class="tlb-lib__actions">
+            <!-- 默认模式:导出 / 删除 常驻标题列右侧;删除走二次确认 -->
+            <span v-if="!picking && cardConfirmId !== a.id" class="tlb-lib__actions">
               <button class="tlb-lib__cardbtn" title="导出" @click.stop="askExport([a.id])">
                 <Icon name="export" :size="12" />
               </button>
-              <button class="tlb-lib__cardbtn tlb-lib__cardbtn--danger" title="删除" @click.stop="removeOne(a.id)">
+              <button class="tlb-lib__cardbtn tlb-lib__cardbtn--danger" title="删除" @click.stop="askCardDelete(a.id)">
                 <Icon name="trash" :size="12" />
               </button>
+            </span>
+            <span v-else-if="!picking" class="tlb-lib__actions tlb-lib__actions--confirm">
+              <button class="tlb-lib__cardconfirm tlb-lib__cardconfirm--ok" title="确认删除" @click.stop="confirmCardDelete">删</button>
+              <button class="tlb-lib__cardconfirm" title="取消" @click.stop="cancelCardDelete">否</button>
             </span>
           </span>
           <span class="tlb-lib__media">
@@ -777,6 +797,29 @@ function onResDragEnd(): void {
 
 .tlb-lib__cardbtn--danger {
   background: var(--tlb-danger);
+}
+
+/* 卡片標題列二次確認小鈕(基底樣式;retro 在主題檔覆寫) */
+.tlb-lib__cardconfirm {
+  height: 18px;
+  padding: 0 5px;
+  border: 1px solid var(--tlb-line);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface);
+  color: var(--tlb-ink-soft);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tlb-lib__cardconfirm--ok {
+  border-color: var(--tlb-danger);
+  color: var(--tlb-danger);
+}
+
+.tlb-lib__cardconfirm--ok:hover {
+  background: var(--tlb-danger);
+  color: #fff;
 }
 
 /* ---- 分隔条:整条水平条,横贯面板(静态,拖拽不高亮) ---- */

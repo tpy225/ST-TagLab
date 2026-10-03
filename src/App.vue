@@ -66,7 +66,14 @@ const OPAQUE_FALLBACK: Record<string, [string, string]> = {
 function syncOpaqueTokens(): void {
   const el = rootEl.value;
   if (!el) return;
-  const fb = OPAQUE_FALLBACK[settings.theme] ?? OPAQUE_FALLBACK.st;
+  // 自帶色板的主題 token 是不透明 hex,直接用保底值,避免探針誤取宿主底色
+  if (settings.theme !== 'st') {
+    const fb = OPAQUE_FALLBACK[settings.theme] ?? OPAQUE_FALLBACK.day;
+    el.style.setProperty('--tlb-surface-opaque', fb[0]);
+    el.style.setProperty('--tlb-surface-2-opaque', fb[1]);
+    return;
+  }
+  const fb = OPAQUE_FALLBACK.st;
   const surface = resolveTokenColor('--tlb-surface') ?? fb[0];
   const surface2 = resolveTokenColor('--tlb-surface-2') ?? fb[1];
   el.style.setProperty('--tlb-surface-opaque', surface);
