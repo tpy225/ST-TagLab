@@ -15,29 +15,23 @@ const PANEL_W = 820;
 const PANEL_H_RATIO = 0.94;
 const version = __TLB_VERSION__;
 
-/* 移動端:JS 直接給四邊 inset 全螢幕定位,不再靠 CSS @media 覆寫內聯 px(安卓 WebView/桌面模式下媒體查詢不可靠)。 */
+/* 移動端判定(matchMedia + UA 雙保險):驅動全屏抽屜佈局。 */
 const isMobile = useIsMobile();
 
 const pos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 const size = ref({ w: PANEL_W, h: 600 });
 
-const SAFE = {
-  top: 'calc(env(safe-area-inset-top, 0px) + 6px)',
-  right: 'calc(env(safe-area-inset-right, 0px) + 6px)',
-  bottom: 'calc(env(safe-area-inset-bottom, 0px) + 6px)',
-  left: 'calc(env(safe-area-inset-left, 0px) + 6px)',
-};
-
-const style = computed(() =>
-  isMobile.value
-    ? { top: SAFE.top, right: SAFE.right, bottom: SAFE.bottom, left: SAFE.left, width: 'auto', height: 'auto' }
-    : {
-        left: `${pos.value.x}px`,
-        top: `${pos.value.y}px`,
-        width: `${size.value.w}px`,
-        height: `${size.value.h}px`,
-      },
-);
+/*
+ * 桌面定位/尺寸由內聯 px 給;移動端全部交 .tlb-panel--mobile 類覆寫:
+ * 高度用顯式 vh/dvh 鏈,不能用 top+bottom 配 height:auto ——
+ * 部分移動瀏覽器內核會把四邊撐出的 fixed 高度解析為 0(整窗塌成一條)。
+ */
+const style = computed(() => ({
+  left: `${pos.value.x}px`,
+  top: `${pos.value.y}px`,
+  width: `${size.value.w}px`,
+  height: `${size.value.h}px`,
+}));
 
 const TABS: { key: TlbTab; label: string; icon: string }[] = [
   { key: 'gen', label: '生成', icon: 'sparkles' },
@@ -150,6 +144,9 @@ function onDragUp(): void {
 </script>
 
 <template>
+  <!-- 桌面:overlay display:contents 穿透,面板保持 fixed 浮窗;
+       移動:overlay 為 fixed 全視口 flex 容器(顯式 vh/dvh),面板貼底抽屜,高度鏈不依賴父級百分比。 -->
+  <div class="tlb-overlay" :class="{ 'tlb-overlay--mobile': isMobile }">
   <div class="tlb-panel" :class="{ 'tlb-panel--mobile': isMobile }" :style="style">
     <div class="tlb-panel__head" @pointerdown="onDragDown" @pointermove="onDragMove" @pointerup="onDragUp" @pointercancel="onDragUp">
       <Icon name="flask" />
@@ -183,9 +180,15 @@ function onDragUp(): void {
       </button>
     </div>
   </div>
+  </div>
 </template>
 
 <style scoped>
+/* 桌面:容器不參與排版,面板自行 fixed 定位(保留拖拽/存位) */
+.tlb-overlay {
+  display: contents;
+}
+
 .tlb-panel {
   position: fixed;
   z-index: 10010;
@@ -263,12 +266,44 @@ function onDragUp(): void {
   box-shadow: inset 0 -2px 0 var(--tlb-accent);
 }
 
-/* ---- 移動端:撐滿安全區,避開狀態列/動態島與 Home 指示條 ----
-   定位由 JS matchMedia/UA 判定後直接給內聯 inset(見 useIsMobile),
-   這裡只處理圓角/內距等視覺;不再用 @media !important 覆寫,
-   避免安卓 WebView/桌面版網站下媒體查詢失靈導致 820px 桌面浮窗塌陷。 */
+/* ---- 移動端:fixed 全視口容器 + 貼底抽屜 ----
+   1) overlay 四邊屬性展開寫(不用 inset 簡寫),避免部分移動內核不認簡寫導致高度塌成 auto;
+   2) 高度雙寫 vh→dvh,動態視口跟隨地址欄,舊內核降級 vh;
+   3) 容器本身 pointer-events:none,僅面板接收事件,背景聊天頁不被擋。 */
+.tlb-overlay--mobile {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 10010;
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 6px)
+    calc(env(safe-area-inset-right, 0px) + 6px)
+    calc(env(safe-area-inset-bottom, 0px) + 6px)
+    calc(env(safe-area-inset-left, 0px) + 6px);
+  pointer-events: none;
+}
+
 .tlb-panel--mobile {
-  border-radius: var(--tlb-radius);
+  position: relative;
+  inset: auto;
+  flex: 0 0 auto;
+  width: 100% !important;
+  max-width: 100%;
+  /* 顯式視口高度,不依賴父級/inset 高度鏈:vh 先聲明,dvh 支援時覆蓋 */
+  height: calc(100vh - 12px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+  height: calc(100dvh - 12px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  max-height: calc(100vh - 12px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  max-height: calc(100dvh - 12px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  border: 1px solid var(--tlb-line);
+  border-radius: var(--tlb-radius-win) var(--tlb-radius-win) 0 0;
 }
 
 .tlb-panel--mobile .tlb-panel__head {

@@ -1864,6 +1864,17 @@ label.tlb-vibe__groupbtn {
   min-height: 220px;
 }
 
+/* 快捷 tag:窄屏不壓字,標籤固定寬度整排橫滑,AI/生圖鈕不縮 */
+.tlb-gen--mobile .tlb-gen__quick {
+  flex: 1 1 0;
+}
+.tlb-gen--mobile .tlb-gen__quick .tlb-chip {
+  flex: none;
+}
+.tlb-gen--mobile .tlb-gen__gobtn {
+  flex: none;
+}
+
 /* 生圖參數:3 列/2 列在 ≤~380px 寬度下每格不足 100px,統一改單列 */
 .tlb-gen--mobile .tlb-gen__pgrid,
 .tlb-gen--mobile .tlb-gen__prow--2,
