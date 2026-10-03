@@ -977,9 +977,9 @@
 .tlb-root[data-theme='retro'] .tlb-vibe__thumbimg {
   grid-column: 1;
   grid-row: 1 / span 3;
-  align-self: start; /* 固定高度,寬度隨原圖比例 */
-  width: auto !important;
-  height: 65px !important;
+  align-self: start;
+  width: 60px !important;
+  height: 66px !important;
   min-height: 0;
   object-fit: cover;
   border: 1px solid var(--tlb-stroke);
@@ -1159,7 +1159,7 @@
 }
 
 .tlb-root[data-theme='retro'] .tlb-set__linklist .tlb-hint {
-  color: var(--tlb-line-strong);
+  color: rgba(107, 92, 72, 0.9);
 }
 
 /* 畫廊標籤 chip:奶油底無邊線 */
