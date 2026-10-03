@@ -12,6 +12,7 @@ import type { TlbWatermarkConfig } from '@/types';
 import { cachedImage, ui } from '@/state/ui';
 import { notify } from '@/st/toast';
 import Icon from '@/components/Icon.vue';
+import TlbSelect from '@/components/TlbSelect.vue';
 
 /* ---- 尺寸:实测浮动面板矩形(同 PreviewModal) ---- */
 
@@ -455,10 +456,12 @@ function deletePreset(): void {
         <div>
           <label class="tlb-label">水印樣式</label>
           <div class="tlb-row tlb-wm__preset-row">
-            <select v-model="presetSel" class="tlb-select tlb-wm__preset-sel" @change="applyPreset">
-              <option value="">(不使用)</option>
-              <option v-for="p in settings.watermarkPresets" :key="p.id" :value="p.id">{{ p.name }}</option>
-            </select>
+            <TlbSelect
+              v-model="presetSel"
+              class="tlb-wm__preset-sel"
+              :options="[{ value: '', label: '(不使用)' }, ...settings.watermarkPresets.map(p => ({ value: p.id, label: p.name }))]"
+              @change="applyPreset"
+            />
             <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" title="目前配置另存為新樣式" @click="savePresetAs"><Icon name="plus" /></button>
             <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" title="保存到目前樣式" :disabled="!presetSel" @click="savePreset"><Icon name="save" /></button>
             <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" title="重新命名目前樣式" :disabled="!presetSel" @click="renamePreset"><Icon name="rename" /></button>

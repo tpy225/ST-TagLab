@@ -38,6 +38,7 @@ import {
 import { notify } from '@/st/toast';
 import Icon from '@/components/Icon.vue';
 import InputActions from '@/components/InputActions.vue';
+import TlbSelect from '@/components/TlbSelect.vue';
 import { usePanelAnchor } from '@/use/panelAnchor';
 import type { TlbHistoryMeta, TlbVibe, TlbVibeGroup } from '@/types';
 
@@ -76,8 +77,8 @@ const artistPrompt = computed<string>({
 });
 
 /** 下拉手动选择(含「不使用」):清掉临时画师串草稿。 */
-function onArtistPick(e: Event): void {
-  selectArtist((e.target as HTMLSelectElement).value);
+function onArtistPick(id: string | number): void {
+  selectArtist(String(id));
 }
 
 const artistPlaceholder = computed(() =>
@@ -544,12 +545,12 @@ async function onVibeDelete(vibe: TlbVibe): Promise<void> {
 
 /* ---- 组保存栏 ---- */
 
-async function onGroupPick(e: Event): Promise<void> {
-  const id = (e.target as HTMLSelectElement).value;
+async function onGroupPick(id: string | number): Promise<void> {
+  const gid = String(id);
   setVibeStatus('');
-  await applyVibeGroup(id);
-  if (id) {
-    const g = settings.vibeGroups.find(x => x.id === id);
+  await applyVibeGroup(gid);
+  if (gid) {
+    const g = settings.vibeGroups.find(x => x.id === gid);
     if (g) setVibeStatus(`已套用组「${g.name}」`, 'success');
   }
 }
@@ -706,10 +707,12 @@ async function onVibeImport(e: Event): Promise<void> {
         <div>
           <label class="tlb-label">画师串预设</label>
           <div class="tlb-row tlb-gen__preset-row">
-            <select v-model="settings.activeArtistId" class="tlb-select tlb-gen__preset-sel" @change="onArtistPick">
-              <option value="">(不使用)</option>
-              <option v-for="a in settings.artistPresets" :key="a.id" :value="a.id">{{ a.name }}</option>
-            </select>
+            <TlbSelect
+              v-model="settings.activeArtistId"
+              class="tlb-gen__preset-sel"
+              :options="[{ value: '', label: '(不使用)' }, ...settings.artistPresets.map(a => ({ value: a.id, label: a.name }))]"
+              @change="onArtistPick"
+            />
             <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" title="当前内容另存为新预设(弹窗命名)" @click="saveArtistAs"><Icon name="plus" /></button>
             <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" title="保存到当前预设" :disabled="!activeArtistPreset()" @click="saveArtist"><Icon name="save" /></button>
             <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" title="重新命名当前预设" :disabled="!activeArtistPreset()" @click="renameArtist"><Icon name="rename" /></button>
@@ -821,12 +824,12 @@ async function onVibeImport(e: Event): Promise<void> {
 
         <!-- 组保存栏:高度/圆角/间距与画师串预设行完全一致(gap 5、select/钮 26px) -->
         <div class="tlb-row tlb-vibe__groupbar">
-          <select class="tlb-select tlb-vibe__groupselect" :value="vibeSelection.groupId" @change="onGroupPick">
-            <option value="">— Vibe 组 —</option>
-            <option v-for="g in settings.vibeGroups" :key="g.id" :value="g.id">
-              {{ g.name }}（{{ g.members.length }} 张）
-            </option>
-          </select>
+          <TlbSelect
+            class="tlb-vibe__groupselect"
+            :model-value="vibeSelection.groupId"
+            :options="[{ value: '', label: '— Vibe 组 —' }, ...settings.vibeGroups.map(g => ({ value: g.id, label: `${g.name}（${g.members.length} 张）` }))]"
+            @change="onGroupPick"
+          />
           <div class="tlb-vibe__groupbtns">
             <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon tlb-vibe__groupbtn" type="button" title="把当前勾选与强度另存为新 Vibe 组" @click="onGroupSaveAs"><Icon name="plus" :size="16" /></button>
             <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon tlb-vibe__groupbtn" type="button" :disabled="!selectedGroup" title="重命名当前组" @click="onGroupRename"><Icon name="edit" :size="15" /></button>
@@ -906,16 +909,14 @@ async function onVibeImport(e: Event): Promise<void> {
                 />
               </div>
               <div class="tlb-vibe__row tlb-vibe__info-row">
-                <select
-                  v-model.number="v.infoExtracted"
+                <TlbSelect
+                  v-model="v.infoExtracted"
                   class="tlb-vibe__info-sel"
                   :disabled="v.busy"
                   title="信息提取(改了要重新花点数编码)"
+                  :options="[{ value: 1, label: '高·构图' }, { value: 0, label: '低·色彩' }]"
                   @change="onInfoChange(v)"
-                >
-                  <option :value="1">高·构图</option>
-                  <option :value="0">低·色彩</option>
-                </select>
+                />
                 <span class="tlb-vibe__badge" :class="`tlb-vibe__badge--${vibeBadge(v).cls}`">{{ vibeBadge(v).text }}</span>
                 <span class="tlb-vibe__iconpair">
                   <button class="tlb-vibe__iconbtn" type="button" title="导出此 Vibe(.naiv4vibe,含原图与各模型编码)" @click="onExportVibe(v)"><Icon name="file-export" :size="14" /></button>
@@ -944,22 +945,16 @@ async function onVibeImport(e: Event): Promise<void> {
           <div class="tlb-gen__pgrid">
             <label class="tlb-gen__pfield tlb-gen__pmodel">
               <span class="tlb-label">模型</span>
-              <select v-model="settings.nai.model" class="tlb-select">
-                <option v-for="m in NAI_MODELS" :key="m.value" :value="m.value">{{ m.label }}</option>
-              </select>
+              <TlbSelect v-model="settings.nai.model" :options="NAI_MODELS" />
             </label>
             <div class="tlb-gen__prow tlb-gen__prow--3">
               <label class="tlb-gen__pfield">
                 <span class="tlb-label">采样器</span>
-                <select v-model="settings.nai.sampler" class="tlb-select">
-                  <option v-for="s in samplers" :key="s.value" :value="s.value">{{ s.label }}</option>
-                </select>
+                <TlbSelect v-model="settings.nai.sampler" :options="samplers" />
               </label>
               <label class="tlb-gen__pfield">
                 <span class="tlb-label">噪声表</span>
-                <select v-model="settings.nai.noiseSchedule" class="tlb-select">
-                  <option v-for="s in NAI_NOISE_SCHEDULES" :key="s.value" :value="s.value">{{ s.label }}</option>
-                </select>
+                <TlbSelect v-model="settings.nai.noiseSchedule" :options="NAI_NOISE_SCHEDULES" />
               </label>
               <label class="tlb-gen__pcheck" title="Variety Boost">
                 <input v-model="settings.nai.varietyBoost" class="tlb-checkbox" type="checkbox" />
@@ -983,9 +978,11 @@ async function onVibeImport(e: Event): Promise<void> {
             <div class="tlb-gen__prow tlb-gen__prow--2">
               <label class="tlb-gen__pfield">
                 <span class="tlb-label">尺寸</span>
-                <select v-model="settings.nai.portraitSize" class="tlb-select" title="生成图片尺寸">
-                  <option v-for="s in sizeOptions" :key="s" :value="s">{{ s }}</option>
-                </select>
+                <TlbSelect
+                  v-model="settings.nai.portraitSize"
+                  title="生成图片尺寸"
+                  :options="sizeOptions.map(s => ({ value: s, label: s }))"
+                />
               </label>
               <label class="tlb-gen__pfield">
                 <span class="tlb-label">种子 <span class="tlb-hint">(0=随机)</span></span>
@@ -1726,18 +1723,15 @@ label.tlb-vibe__groupbtn {
 }
 
 .tlb-vibe__info-sel {
-  font-size: 11px;
-  padding: 3px 6px;
   max-width: 110px;
-  border: 1px solid var(--tlb-line);
-  border-radius: 8px;
-  background: var(--tlb-surface);
-  color: var(--tlb-ink);
 }
 
 /* 编码状态徽标:主题色=已编码 / 黄=待编码 / 灰=不支持 */
 .tlb-vibe__badge {
+  display: inline-flex;
+  align-items: center;
   font-size: 10px;
+  line-height: 1.4;
   padding: 2px 7px;
   border-radius: 999px;
   white-space: nowrap;

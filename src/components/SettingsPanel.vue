@@ -20,6 +20,7 @@ import { syncFromChatu8 } from '@/sync/chatu8';
 import { syncFromXiaobai } from '@/sync/xiaobaix';
 import type { SyncReport } from '@/sync/shared';
 import Icon from '@/components/Icon.vue';
+import TlbSelect from '@/components/TlbSelect.vue';
 import type { TlbArtistPreset, TlbBotProfile, TlbNaiEndpoint, TlbVibe } from '@/types';
 
 /* ---- 三向同步(柏宝绘 / 智绘姬 / 小白X)---- */
@@ -296,8 +297,8 @@ function removeBotProfile(): void {
 }
 
 /** 切换 Provider:选定官方渠道时代填 Base URL,模型为空时顺带填推荐模型。 */
-function onProviderChange(e: Event): void {
-  const prov = BOT_PROVIDERS.find(x => x.id === (e.target as HTMLSelectElement).value) ?? BOT_PROVIDERS[0];
+function onProviderChange(id: string | number): void {
+  const prov = BOT_PROVIDERS.find(x => x.id === String(id)) ?? BOT_PROVIDERS[0];
   botDraft.provider = prov.id;
   if (prov.url) botDraft.baseUrl = prov.url;
   if (prov.model && !botDraft.model.trim()) botDraft.model = prov.model;
@@ -335,9 +336,9 @@ const activeBotPromptBuiltin = computed(() =>
 );
 
 /** 切换已保存提示词:把内容载入正文草稿。 */
-function pickBotPrompt(e: Event): void {
+function pickBotPrompt(id: string | number): void {
   const p = activeBot.value;
-  const found = p.prompts.find(x => x.id === (e.target as HTMLSelectElement).value);
+  const found = p.prompts.find(x => x.id === String(id));
   if (!found) return;
   p.activePromptId = found.id;
   botPromptText.value = found.content;
@@ -758,9 +759,11 @@ const RESOURCE_LINKS = [
         <div class="tlb-cfg__field">
           <span class="tlb-cfg__label">接入点</span>
           <div class="tlb-row tlb-presetrow">
-            <select v-model="settings.nai.activeEndpointId" class="tlb-select tlb-presetrow__sel">
-              <option v-for="ep in settings.nai.endpoints" :key="ep.id" :value="ep.id">{{ ep.name }}</option>
-            </select>
+            <TlbSelect
+              v-model="settings.nai.activeEndpointId"
+              class="tlb-presetrow__sel"
+              :options="settings.nai.endpoints.map(ep => ({ value: ep.id, label: ep.name }))"
+            />
             <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" type="button" title="当前地址/Key 另存为新接入点(弹窗命名)" @click="saveEndpointAs">
               <Icon name="plus" />
             </button>
@@ -823,9 +826,11 @@ const RESOURCE_LINKS = [
       <div v-if="open.bot" class="tlb-card__body">
         <!-- 配置档:与生成页「画师串预设」100% 同款:下拉载入草稿 → ＋另存/💾保存/rename/🗑 -->
         <div class="tlb-row tlb-presetrow">
-          <select v-model="settings.bot.activeProfileId" class="tlb-select tlb-presetrow__sel">
-            <option v-for="p in settings.bot.profiles" :key="p.id" :value="p.id">{{ p.name }}</option>
-          </select>
+          <TlbSelect
+            v-model="settings.bot.activeProfileId"
+            class="tlb-presetrow__sel"
+            :options="settings.bot.profiles.map(p => ({ value: p.id, label: p.name }))"
+          />
           <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" type="button" title="当前表单另存为新配置档(弹窗命名)" @click="saveBotProfileAs">
             <Icon name="plus" />
           </button>
@@ -842,9 +847,11 @@ const RESOURCE_LINKS = [
 
         <div class="tlb-cfg__field">
           <span class="tlb-cfg__label">Provider</span>
-          <select class="tlb-select" :value="botDraft.provider" @change="onProviderChange">
-            <option v-for="prov in BOT_PROVIDERS" :key="prov.id" :value="prov.id">{{ prov.name }}</option>
-          </select>
+          <TlbSelect
+            :model-value="botDraft.provider"
+            :options="BOT_PROVIDERS.map(prov => ({ value: prov.id, label: prov.name }))"
+            @change="onProviderChange"
+          />
         </div>
 
         <!-- Base URL / API Key 同一行(草稿,点 💾 才写回) -->
@@ -917,9 +924,12 @@ const RESOURCE_LINKS = [
         <div class="tlb-cfg__field">
           <span class="tlb-cfg__label">系统提示词</span>
           <div class="tlb-row tlb-presetrow">
-            <select class="tlb-select tlb-presetrow__sel" :value="activeBot.activePromptId" @change="pickBotPrompt">
-              <option v-for="pp in activeBot.prompts" :key="pp.id" :value="pp.id">{{ pp.name }}</option>
-            </select>
+            <TlbSelect
+              class="tlb-presetrow__sel"
+              :model-value="activeBot.activePromptId"
+              :options="activeBot.prompts.map(pp => ({ value: pp.id, label: pp.name }))"
+              @change="pickBotPrompt"
+            />
             <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" type="button" title="正文另存为新提示词(弹窗命名,内置默认只读,请另存后修改)" @click="saveBotPromptAs">
               <Icon name="plus" />
             </button>

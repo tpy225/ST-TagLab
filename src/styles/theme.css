@@ -979,7 +979,7 @@
   grid-row: 1 / span 3;
   align-self: start;
   width: 60px !important;
-  height: 66px !important;
+  height: 68px !important;
   min-height: 0;
   object-fit: cover;
   border: 1px solid var(--tlb-stroke);
@@ -1091,13 +1091,10 @@
   background: var(--tlb-surface);
 }
 
-.tlb-root[data-theme='retro'] .tlb-vibe__info-sel {
+.tlb-root[data-theme='retro'] .tlb-vibe__info-sel .tlb-selectdd__control {
   height: 22px;
-  padding: 0 18px 0 6px;
-  border: 1.5px solid var(--tlb-stroke);
-  border-radius: var(--tlb-radius-sm);
+  padding: 0 6px;
   font-size: 10.5px;
-  background-color: var(--tlb-surface);
 }
 
 /* OK 狀態:無底色像素紫字(pending/off 保留淺膠囊以便辨識) */
@@ -1159,7 +1156,7 @@
 }
 
 .tlb-root[data-theme='retro'] .tlb-set__linklist .tlb-hint {
-  color: rgba(107, 92, 72, 0.9);
+  color: rgba(107, 92, 72, 0.8);
 }
 
 /* 畫廊標籤 chip:奶油底無邊線 */
@@ -1167,6 +1164,30 @@
   border-color: transparent;
   border-radius: 2px;
   background: var(--tlb-cream);
+}
+
+/* —— 自製下拉選單:硬邊奶油底、實影、陶色選中 —— */
+.tlb-root[data-theme='retro'] .tlb-selectdd__menu {
+  padding: 4px;
+  background: var(--tlb-surface);
+  border: 1.5px solid var(--tlb-stroke);
+  border-radius: 4px;
+  box-shadow: 3px 3px 0 rgba(92, 79, 63, 0.85);
+}
+
+.tlb-root[data-theme='retro'] .tlb-selectdd__item {
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+.tlb-root[data-theme='retro'] .tlb-selectdd__item:hover {
+  background: var(--tlb-purple-soft);
+  color: var(--tlb-ink);
+}
+
+.tlb-root[data-theme='retro'] .tlb-selectdd__item.is-active {
+  background: var(--tlb-purple);
+  color: var(--tlb-purple-ink);
 }
 
 /* —— 手機安全區媒體查詢沿用 FloatingPanel 規則,僅覆蓋框線圓角 —— */
