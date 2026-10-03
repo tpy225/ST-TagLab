@@ -119,7 +119,7 @@ export function defaultBotProfile(over: Partial<TlbBotProfile> = {}): TlbBotProf
 export function defaultSettings(): TlbSettings {
   return {
     version: 1,
-    theme: 'st',
+    theme: 'retro',
     nai: {
       endpoints: [officialEndpoint()],
       activeEndpointId: OFFICIAL_ENDPOINT_ID,
@@ -159,6 +159,8 @@ export function defaultSettings(): TlbSettings {
 function normalize(s: TlbSettings): TlbSettings {
   const d = defaultSettings();
   const out: TlbSettings = { ...d, ...s };
+  // 舊版 day/night 主題已移除,髒值統一回落預設 retro
+  if (out.theme !== 'st' && out.theme !== 'retro') out.theme = 'retro';
   out.nai = { ...d.nai, ...(s.nai ?? {}) };
   out.bot = normalizeBot(s.bot as Partial<TlbSettings['bot']> & Record<string, unknown> | undefined);
   if (!Array.isArray(out.nai.endpoints) || out.nai.endpoints.length === 0) {

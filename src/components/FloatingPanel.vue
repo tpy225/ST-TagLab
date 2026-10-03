@@ -98,18 +98,14 @@ function onKeydown(e: KeyboardEvent): void {
   if (e.key === 'Escape' && ui.panelOpen) closePanel();
 }
 
-/* ---- 外观:标题栏小圆钮,点击在 跟随酒馆 → 昼 → 夜 → 复古紫 间循环 ---- */
-const THEME_CYCLE: TlbTheme[] = ['st', 'day', 'night', 'retro'];
+/* ---- 外觀:標題欄小圓鈕,在 跟隨酒館 → 復古暖陶 間切換 ---- */
 const THEME_LABEL: Record<TlbTheme, string> = {
   st: '跟随酒馆',
-  day: '昼 · 象牙白',
-  night: '夜 · 海军黑',
-  retro: '复古 · 暖陶米',
+  retro: '默认',
 };
 
 function cycleTheme(): void {
-  const i = THEME_CYCLE.indexOf(settings.theme);
-  settings.theme = THEME_CYCLE[(i + 1) % THEME_CYCLE.length];
+  settings.theme = settings.theme === 'retro' ? 'st' : 'retro';
 }
 
 /* ---- 拖动(标题栏 pointer 事件) ---- */

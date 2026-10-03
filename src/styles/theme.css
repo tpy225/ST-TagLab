@@ -1,6 +1,6 @@
 /*
  * 主题令牌 — Tag 实验室
- * 默认 'st' 跟随宿主 --SmartTheme* 派生,另备昼/夜两套固定主题。
+ * 兩套外觀:'st' 跟随宿主 --SmartTheme* 派生;'retro' 固定暖陶米復古板。
  */
 
 .tlb-root {
@@ -18,47 +18,6 @@
   /* —— 动效 —— */
   --tlb-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --tlb-dur: 0.28s;
-}
-
-/* ========== 昼 · 象牙白 ========== */
-.tlb-root[data-theme='day'] {
-  --tlb-bg: oklch(0.97 0.004 90);
-  --tlb-surface: oklch(1 0 0);
-  --tlb-surface-2: oklch(0.945 0.006 90);
-  --tlb-ink: oklch(0.252 0.056 264);
-  --tlb-ink-soft: oklch(0.46 0.04 264);
-  --tlb-ink-muted: oklch(0.62 0.03 264);
-  --tlb-accent: oklch(0.57 0.13 62);
-  --tlb-accent-soft: oklch(0.57 0.13 62 / 0.12);
-  --tlb-accent-ink: oklch(1 0 0);
-  --tlb-line: oklch(0.91 0.005 90);
-  --tlb-line-strong: oklch(0.87 0.006 90);
-  --tlb-danger: oklch(0.52 0.18 25);
-  --tlb-danger-soft: oklch(0.52 0.18 25 / 0.1);
-  --tlb-warning: oklch(0.55 0.1 75);
-  --tlb-overlay: oklch(0.252 0.056 264 / 0.34);
-  --tlb-shadow: 0 18px 48px -20px oklch(0.252 0.056 264 / 0.22),
-    0 4px 12px -6px oklch(0.252 0.056 264 / 0.1);
-}
-
-/* ========== 夜 · 海军黑 ========== */
-.tlb-root[data-theme='night'] {
-  --tlb-bg: #37353E;
-  --tlb-surface: #44444E;
-  --tlb-surface-2: #4E4D58;
-  --tlb-ink: #D3DAD9;
-  --tlb-ink-soft: #B0B5B4;
-  --tlb-ink-muted: #8E9392;
-  --tlb-accent: #76ABAE;
-  --tlb-accent-soft: #76ABAE26;
-  --tlb-accent-ink: #2C3536;
-  --tlb-line: #53525D;
-  --tlb-line-strong: #686774;
-  --tlb-danger: #D96B6B;
-  --tlb-danger-soft: #D96B6B26;
-  --tlb-warning: #D9B358;
-  --tlb-overlay: #1F1E2499;
-  --tlb-shadow: 0 20px 56px -22px #000000A6, 0 4px 14px -8px #00000080;
 }
 
 /* ========== 复古 · 暖陶米(奶霜米 + 暖陶褐 + 硬边框实体投影) ========== */
@@ -1203,7 +1162,7 @@
   }
 }
 
-/* ========== 跟随 ST ========== */
+/* ========== 跟随酒馆:色板全部派生自宿主 --SmartTheme* ========== */
 .tlb-root[data-theme='st'] {
   --tlb-bg: var(--SmartThemeBlurTintColor, #f6f5f2);
   --tlb-surface: var(--SmartThemeChatTintColor, #ffffff);
@@ -1223,3 +1182,4 @@
   --tlb-shadow: 0 18px 48px -20px var(--SmartThemeShadowColor, #00000038),
     0 4px 12px -6px var(--SmartThemeShadowColor, #0000001a);
 }
+

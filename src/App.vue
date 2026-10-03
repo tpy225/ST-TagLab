@@ -55,10 +55,8 @@ function resolveTokenColor(token: string): string | null {
   return flat ?? null;
 }
 
-/** 解析彻底失败时的保底:昼主题白、夜主题深、ST 跟随用白底、复古紫用奶油纸。 */
+/** 解析彻底失败时的保底:跟随酒馆用白底、复古暖陶用奶油纸。 */
 const OPAQUE_FALLBACK: Record<string, [string, string]> = {
-  day: ['rgb(255,255,255)', 'rgb(241,240,237)'],
-  night: ['#44444E', '#4E4D58'],
   st: ['rgb(255,255,255)', 'rgb(242,241,239)'],
   retro: ['#F7F1E7', '#F0E8DA'],
 };
@@ -66,9 +64,9 @@ const OPAQUE_FALLBACK: Record<string, [string, string]> = {
 function syncOpaqueTokens(): void {
   const el = rootEl.value;
   if (!el) return;
-  // 自帶色板的主題 token 是不透明 hex,直接用保底值,避免探針誤取宿主底色
+  // retro 自帶不透明色板,直接用保底值,避免探針誤取宿主底色
   if (settings.theme !== 'st') {
-    const fb = OPAQUE_FALLBACK[settings.theme] ?? OPAQUE_FALLBACK.day;
+    const fb = OPAQUE_FALLBACK[settings.theme] ?? OPAQUE_FALLBACK.retro;
     el.style.setProperty('--tlb-surface-opaque', fb[0]);
     el.style.setProperty('--tlb-surface-2-opaque', fb[1]);
     return;

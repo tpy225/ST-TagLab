@@ -119,7 +119,8 @@ export interface TlbBot {
   activeProfileId: string;
 }
 
-export type TlbTheme = 'st' | 'day' | 'night' | 'retro';
+/** 外觀主題:跟隨酒館 或 固定 retro 暖陶米。 */
+export type TlbTheme = 'st' | 'retro';
 
 /** NAI 连接与出图参数(画板自管)。 */
 export interface TlbNai {
