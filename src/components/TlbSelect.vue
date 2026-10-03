@@ -3,8 +3,11 @@
  * 自製下拉:原生 select 的彈出選單無法配色,統一用這個。
  * v-model 綁值;另發 change(值) 給需要副作用的場景。
  * 外觀吃 .tlb-select 與傳入 class,各主題自動跟隨。
+ *
+ * 彈層 Teleport 到 .tlb-root 下的共享 overlay 層、position:fixed 定位:
+ * 浮窗 .tlb-panel 有 overflow:hidden,彈層放內部必被裁剪/遮擋。
  */
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
 import Icon from '@/components/Icon.vue';
 
@@ -29,31 +32,68 @@ const emit = defineEmits<{
 }>();
 
 const open = ref(false);
-const rootEl = ref<HTMLElement | null>(null);
+const controlEl = ref<HTMLButtonElement | null>(null);
+const menuEl = ref<HTMLUListElement | null>(null);
+const overlayEl = ref<HTMLElement | null>(null);
+const menuStyle = ref<Record<string, string>>({});
 const current = computed(() => props.options.find(o => o.value === props.modelValue));
 
-/* 彈層逃不出 .tlb-panel 的層疊上下文;打開期間把整個浮窗抬高到宿主 UI 之上,關閉復原 */
-const OPEN_Z = '100000';
-
-function panelEl(): HTMLElement | null {
-  return rootEl.value?.closest<HTMLElement>('.tlb-panel') ?? null;
-}
-
-function liftPanel(on: boolean): void {
-  const p = panelEl();
-  if (!p) return;
-  if (on) {
-    if (!p.dataset.tlbPrevZ) p.dataset.tlbPrevZ = p.style.zIndex || getComputedStyle(p).zIndex;
-    p.style.zIndex = OPEN_Z;
-  } else {
-    p.style.zIndex = p.dataset.tlbPrevZ ?? '';
-    delete p.dataset.tlbPrevZ;
+/* .tlb-root 下共享一個 overlay 容器(所有 TlbSelect 實例複用) */
+function ensureOverlay(root: HTMLElement): HTMLElement {
+  let el = root.querySelector<HTMLElement>(':scope > .tlb-selectdd__overlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'tlb-selectdd__overlay';
+    /* 動態建立無 scoped 屬性,這層樣式用 inline;自身不攔事件,由 mask/menu 自行開啟 */
+    el.style.cssText = 'position:fixed;inset:0;z-index:100000;pointer-events:none;';
+    root.appendChild(el);
   }
+  return el;
 }
 
-watch(open, v => liftPanel(v));
+function placeMenu(): void {
+  const btn = controlEl.value;
+  if (!btn) return;
+  const r = btn.getBoundingClientRect();
+  const h = menuEl.value?.offsetHeight ?? 0;
+  const gap = 3;
+  const spaceBelow = window.innerHeight - r.bottom;
+  const spaceAbove = r.top;
+  const flipUp = h > 0 && spaceBelow < h + gap + 8 && spaceAbove > spaceBelow;
+  menuStyle.value = {
+    position: 'fixed',
+    left: `${r.left}px`,
+    top: flipUp ? `${r.top - h - gap}px` : `${r.bottom + gap}px`,
+    minWidth: `${r.width}px`,
+    maxWidth: '86vw',
+  };
+}
+
+function closeOnScroll(): void {
+  open.value = false;
+}
+
+watch(open, async (v) => {
+  if (v) {
+    const root = controlEl.value?.closest<HTMLElement>('.tlb-root');
+    overlayEl.value = root ? ensureOverlay(root) : null;
+    await nextTick();
+    placeMenu();
+    /* 面板內容滾動即收起(捕獲階段攔截);視口尺寸變化重新定位 */
+    window.addEventListener('scroll', closeOnScroll, true);
+    window.addEventListener('resize', placeMenu);
+    window.visualViewport?.addEventListener('resize', placeMenu);
+  } else {
+    window.removeEventListener('scroll', closeOnScroll, true);
+    window.removeEventListener('resize', placeMenu);
+    window.visualViewport?.removeEventListener('resize', placeMenu);
+  }
+});
+
 onBeforeUnmount(() => {
-  if (open.value) liftPanel(false);
+  window.removeEventListener('scroll', closeOnScroll, true);
+  window.removeEventListener('resize', placeMenu);
+  window.visualViewport?.removeEventListener('resize', placeMenu);
 });
 
 function toggle(): void {
@@ -69,8 +109,9 @@ function pick(value: string | number): void {
 </script>
 
 <template>
-  <div ref="rootEl" class="tlb-selectdd" :class="{ 'is-open': open, 'is-disabled': disabled }">
+  <div class="tlb-selectdd" :class="{ 'is-open': open, 'is-disabled': disabled }">
     <button
+      ref="controlEl"
       type="button"
       class="tlb-select tlb-selectdd__control"
       :disabled="disabled"
@@ -81,18 +122,24 @@ function pick(value: string | number): void {
       <span class="tlb-selectdd__label">{{ current?.label ?? '' }}</span>
       <Icon :name="open ? 'chevron-up' : 'chevron-down'" :size="13" class="tlb-selectdd__chevron" />
     </button>
-    <div v-if="open" class="tlb-selectdd__mask" @click="open = false" />
-    <ul v-if="open" class="tlb-selectdd__menu tlb-scroll">
-      <li
-        v-for="o in options"
-        :key="o.value"
-        class="tlb-selectdd__item"
-        :class="{ 'is-active': o.value === modelValue }"
-        @click="pick(o.value)"
+    <Teleport v-if="open && overlayEl" :to="overlayEl">
+      <div class="tlb-selectdd__mask" @click="open = false" />
+      <ul
+        ref="menuEl"
+        class="tlb-selectdd__menu tlb-scroll"
+        :style="menuStyle"
       >
-        {{ o.label }}
-      </li>
-    </ul>
+        <li
+          v-for="o in options"
+          :key="o.value"
+          class="tlb-selectdd__item"
+          :class="{ 'is-active': o.value === modelValue }"
+          @click="pick(o.value)"
+        >
+          {{ o.label }}
+        </li>
+      </ul>
+    </Teleport>
   </div>
 </template>
 
@@ -105,6 +152,14 @@ function pick(value: string | number): void {
 
 .tlb-selectdd.is-disabled {
   opacity: 0.55;
+}
+
+/* 共享 overlay:.tlb-root 直接子層,脫離 .tlb-panel 的 overflow:hidden */
+.tlb-selectdd__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  pointer-events: none;
 }
 
 /* 控制鈕沿用 .tlb-select 的框/底/字級,僅去掉原生箭頭背景 */
@@ -136,16 +191,12 @@ function pick(value: string | number): void {
 .tlb-selectdd__mask {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 100000;
+  pointer-events: auto;
 }
 
 .tlb-selectdd__menu {
-  position: absolute;
-  top: calc(100% + 3px);
-  left: 0;
-  right: 0;
-  z-index: 41;
-  max-height: 220px;
+  z-index: 100001;
   margin: 0;
   padding: 4px;
   list-style: none;
@@ -153,6 +204,8 @@ function pick(value: string | number): void {
   border: 1px solid var(--tlb-line);
   border-radius: var(--tlb-radius-sm);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  pointer-events: auto;
+  max-height: 220px;
   overflow-y: auto;
 }
 
