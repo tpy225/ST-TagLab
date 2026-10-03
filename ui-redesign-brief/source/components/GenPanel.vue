@@ -716,10 +716,7 @@ async function onVibeImport(e: Event): Promise<void> {
 
         <!-- 画师串输入框 -->
         <div>
-          <div class="tlb-label tlb-gen__subhead">
-            <span>画师串输入框</span>
-            <InputActions @copy="copyText(artistPrompt, '画师串')" @clear="clearArtist" @zoom="zoomTarget = 'artist'" />
-          </div>
+          <label class="tlb-label">画师串输入框</label>
           <div class="tlb-fieldbox">
             <textarea
               v-model="artistPrompt"
@@ -727,15 +724,13 @@ async function onVibeImport(e: Event): Promise<void> {
               rows="2"
               :placeholder="artistPlaceholder"
             />
+            <InputActions @copy="copyText(artistPrompt, '画师串')" @clear="clearArtist" @zoom="zoomTarget = 'artist'" />
           </div>
         </div>
 
         <!-- 正面提示词 -->
         <div>
-          <div class="tlb-label tlb-gen__cardhead">
-            <span>正面提示词</span>
-            <InputActions @copy="copyText(promptDraft.text, '正面提示词')" @clear="clearPrompt" @zoom="zoomTarget = 'prompt'" />
-          </div>
+          <label class="tlb-label">正面提示词</label>
           <div class="tlb-fieldbox">
             <textarea
               ref="promptEl"
@@ -746,6 +741,7 @@ async function onVibeImport(e: Event): Promise<void> {
               @keydown.meta.enter="generate"
               @keydown.ctrl.enter="generate"
             />
+            <InputActions @copy="copyText(promptDraft.text, '正面提示词')" @clear="clearPrompt" @zoom="zoomTarget = 'prompt'" />
           </div>
           <!-- 快捷输入(左右滑动)+ 生成按钮同一行 -->
           <div class="tlb-gen__quickrow">
@@ -783,14 +779,9 @@ async function onVibeImport(e: Event): Promise<void> {
             <span class="tlb-hint">（覆写；留空 = 官方默认）</span>
             <Icon class="tlb-gen__negarrow" :class="{ 'tlb-gen__negarrow--closed': !showNegative }" name="chevron-down" />
           </div>
-          <div v-if="showNegative" class="tlb-fieldbox tlb-gen__negbox">
+          <div v-if="showNegative" class="tlb-fieldbox">
             <textarea v-model="settings.nai.undesiredContent" class="tlb-textarea" rows="2" placeholder="留空 = 按模型取官方负面词" />
-            <button
-              class="tlb-btn tlb-btn--bare tlb-gen__negzoom"
-              type="button"
-              title="放大"
-              @click="zoomTarget = 'negative'"
-            ><Icon name="maximize" /></button>
+            <InputActions @copy="copyText(settings.nai.undesiredContent, '负面提示词')" @clear="settings.nai.undesiredContent = ''" @zoom="zoomTarget = 'negative'" />
           </div>
         </div>
 
@@ -1077,41 +1068,6 @@ async function onVibeImport(e: Event): Promise<void> {
    悬浮条 hover/聚焦才浮现(见 InputActions.vue),文字可铺满,不再常驻留白。 */
 .tlb-fieldbox {
   position: relative;
-}
-
-/* 操作鈕移進標題列後,以標題列為錨點 */
-.tlb-gen__subhead,
-.tlb-gen__cardhead {
-  position: relative;
-}
-
-/* 負面詞:僅保留單顆懸浮半透明放大鈕(右下角、resize 抓取區上方),hover/聚焦浮現 */
-.tlb-gen__negzoom {
-  position: absolute;
-  right: 6px;
-  bottom: 24px;
-  z-index: 2;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  border: none;
-  border-radius: var(--tlb-radius-pill);
-  background: color-mix(in srgb, var(--tlb-ink) 18%, transparent);
-  color: #fff;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--tlb-dur) var(--tlb-ease) 0.2s, background var(--tlb-dur) var(--tlb-ease);
-}
-
-.tlb-gen__negbox:hover .tlb-gen__negzoom,
-.tlb-gen__negbox:focus-within .tlb-gen__negzoom {
-  opacity: 1;
-  pointer-events: auto;
-  transition-delay: 0s;
-}
-
-.tlb-gen__negzoom:hover {
-  background: color-mix(in srgb, var(--tlb-ink) 38%, transparent);
 }
 
 /* 画师串预设:下拉框占一半,四个符号钮在另一半 */

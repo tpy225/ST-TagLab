@@ -55,12 +55,11 @@ function resolveTokenColor(token: string): string | null {
   return flat ?? null;
 }
 
-/** 解析彻底失败时的保底:昼主题白、夜主题深、ST 跟随用白底、复古紫用奶油纸。 */
+/** 解析彻底失败时的保底:昼主题白、夜主题深、ST 跟随用白底。 */
 const OPAQUE_FALLBACK: Record<string, [string, string]> = {
   day: ['rgb(255,255,255)', 'rgb(241,240,237)'],
   night: ['#44444E', '#4E4D58'],
   st: ['rgb(255,255,255)', 'rgb(242,241,239)'],
-  retro: ['#F7F1E7', '#F0E8DA'],
 };
 
 function syncOpaqueTokens(): void {

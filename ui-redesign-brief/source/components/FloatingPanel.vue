@@ -98,13 +98,12 @@ function onKeydown(e: KeyboardEvent): void {
   if (e.key === 'Escape' && ui.panelOpen) closePanel();
 }
 
-/* ---- 外观:标题栏小圆钮,点击在 跟随酒馆 → 昼 → 夜 → 复古紫 间循环 ---- */
-const THEME_CYCLE: TlbTheme[] = ['st', 'day', 'night', 'retro'];
+/* ---- 外观:标题栏小圆钮,点击在 跟随酒馆 → 昼 → 夜 间循环 ---- */
+const THEME_CYCLE: TlbTheme[] = ['st', 'day', 'night'];
 const THEME_LABEL: Record<TlbTheme, string> = {
   st: '跟随酒馆',
   day: '昼 · 象牙白',
   night: '夜 · 海军黑',
-  retro: '复古 · 暖陶米',
 };
 
 function cycleTheme(): void {
@@ -163,6 +162,7 @@ function onDragUp(): void {
         :class="{ 'tlb-tab--on': ui.tab === tab.key }"
         @click.stop="ui.tab = tab.key"
       >
+        <Icon :name="tab.icon" />
         <span>{{ tab.label }}</span>
       </button>
     </div>

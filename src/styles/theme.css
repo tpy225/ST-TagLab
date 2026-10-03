@@ -61,7 +61,7 @@
   --tlb-shadow: 0 20px 56px -22px #000000A6, 0 4px 14px -8px #00000080;
 }
 
-/* ========== 复古 · 莫兰迪紫(奶油纸 + 硬边框 + 实体投影) ========== */
+/* ========== 复古 · 暖陶米(奶霜米 + 暖陶褐 + 硬边框实体投影) ========== */
 .tlb-root[data-theme='retro'] {
   /* 強制淺色原生控件(避免宿主 color-scheme:dark 讓 select 變深色) */
   color-scheme: light;
@@ -77,38 +77,38 @@
   --tlb-radius-sm: 4px;
   --tlb-dur: 0.12s;
 
-  /* 色板:奶油紙 / 莫蘭迪紫 / 深紫實體邊框 */
-  --tlb-bg: #EFE9DC;
-  --tlb-surface: #FCFAF6;
-  --tlb-surface-2: #F5EFE6;
-  --tlb-ink: #3D3349;
-  --tlb-ink-soft: #635872;
-  --tlb-ink-muted: #968B9F;
-  --tlb-accent: #7E6C94;
-  --tlb-accent-soft: #EDE8F3;
-  --tlb-accent-ink: #FFFFFF;
-  --tlb-line: #7A6D8C;
-  --tlb-line-strong: #615275;
-  --tlb-danger: #BE6A6E;
-  --tlb-danger-soft: rgba(190, 106, 110, 0.14);
-  --tlb-warning: #C29A4B;
-  --tlb-overlay: rgba(61, 51, 73, 0.45);
-  --tlb-shadow: 5px 5px 0 rgba(74, 62, 89, 0.9), 0 12px 28px rgba(74, 62, 89, 0.25);
+  /* 色板:奶霜米 / 暖陶褐 / 灰褐窗底(深咖實體邊框) */
+  --tlb-bg: #D9D1C8;
+  --tlb-surface: #F7F1E7;
+  --tlb-surface-2: #F0E8DA;
+  --tlb-ink: #423A2E;
+  --tlb-ink-soft: #756855;
+  --tlb-ink-muted: #A99C89;
+  --tlb-accent: #C8B39A;
+  --tlb-accent-soft: #EAE1D3;
+  --tlb-accent-ink: #3E3527;
+  --tlb-line: #8A7A63;
+  --tlb-line-strong: #6B5C48;
+  --tlb-danger: #B46A5C;
+  --tlb-danger-soft: rgba(180, 106, 92, 0.14);
+  --tlb-warning: #B7893F;
+  --tlb-overlay: rgba(66, 58, 46, 0.45);
+  --tlb-shadow: 5px 5px 0 rgba(92, 79, 63, 0.9), 0 12px 28px rgba(92, 79, 63, 0.25);
 
-  /* 本主題專用令牌 */
-  --tlb-stroke: #4A3E59;
-  --tlb-purple: #7E6C94;
-  --tlb-purple-deep: #5A4A70;
-  --tlb-purple-soft: #EDE8F3;
-  --tlb-purple-text: #4A3A60;
-  --tlb-purple-ink: #FFFFFF;
-  --tlb-cream: #F5EFE6;
-  --tlb-cream-hover: #EFE5D5;
-  --tlb-cream-active: #E4D6C1;
-  --tlb-cream-stroke: #D2C4B4;
+  /* 本主題專用令牌(沿用 purple 語意名,實為暖陶褐) */
+  --tlb-stroke: #5C4F3F;
+  --tlb-purple: #C8B39A;
+  --tlb-purple-deep: #A89073;
+  --tlb-purple-soft: #EAE1D3;
+  --tlb-purple-text: #5C4F3F;
+  --tlb-purple-ink: #3E3527;
+  --tlb-cream: #F0E8DA;
+  --tlb-cream-hover: #EAE0CF;
+  --tlb-cream-active: #DDD0BB;
+  --tlb-cream-stroke: #C4B6A1;
   --tlb-shadow-win: 5px 5px 0 var(--tlb-stroke);
-  --tlb-shadow-card: 2.5px 2.5px 0 #615275;
-  --tlb-shadow-btn: 2px 2px 0 #615275;
+  --tlb-shadow-card: 2.5px 2.5px 0 #6B5C48;
+  --tlb-shadow-btn: 2px 2px 0 #6B5C48;
 }
 
 /* —— 視窗外殼:復古實體視窗,2px 深紫硬框 + 實影 —— */
@@ -160,7 +160,7 @@
 .tlb-root[data-theme='retro'] .tlb-panel__head .tlb-btn:hover {
   background: var(--tlb-purple);
   border: none;
-  color: #fff;
+  color: var(--tlb-purple-ink);
   filter: none;
 }
 
@@ -275,8 +275,8 @@
   border: 1.5px solid var(--tlb-line-strong);
   border-radius: var(--tlb-radius-sm);
   background: var(--tlb-surface);
-  box-shadow: inset 1.5px 1.5px 0 rgba(74, 62, 89, 0.1),
-    inset -1px -1px 0 rgba(74, 62, 89, 0.04);
+  box-shadow: inset 1.5px 1.5px 0 rgba(92, 79, 63, 0.1),
+    inset -1px -1px 0 rgba(92, 79, 63, 0.04);
 }
 
 .tlb-root[data-theme='retro'] .tlb-input:focus,
@@ -286,17 +286,17 @@
 }
 
 .tlb-root[data-theme='retro'] .tlb-select {
-  background-color: #FCFAF6;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23615275' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9.5 12 15.5 18 9.5'/></svg>");
+  background-color: #F7F1E7;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235C4F3F' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9.5 12 15.5 18 9.5'/></svg>");
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 13px;
-  color: #3D3349;
+  color: #423A2E;
 }
 
 .tlb-root[data-theme='retro'] .tlb-select option {
-  background: #FCFAF6;
-  color: #3D3349;
+  background: #F7F1E7;
+  color: #423A2E;
 }
 
 /* —— 設置卡片 / 彈窗:硬框實影 —— */
@@ -316,7 +316,7 @@
 .tlb-root[data-theme='retro'] .tlb-wm {
   border: 1.5px solid var(--tlb-stroke);
   border-radius: var(--tlb-radius);
-  box-shadow: 6px 6px 0 rgba(74, 62, 89, 0.85), 0 18px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 6px 6px 0 rgba(92, 79, 63, 0.85), 0 18px 40px rgba(0, 0, 0, 0.3);
 }
 
 /* 圖片預覽彈窗:僅保留硬邊框,不要陰影 */
@@ -605,7 +605,7 @@
   transform: none;
 }
 
-/* AI / 生成 雙主按鈕:莫蘭迪紫 + 深紫 */
+/* AI / 生成 雙主按鈕:暖陶褐 + 深陶 */
 .tlb-root[data-theme='retro'] .tlb-gen__gobtn {
   width: 34px;
   height: 30px;
@@ -715,7 +715,7 @@
 .tlb-root[data-theme='retro'] .tlb-vibe__enable:checked {
   border-color: var(--tlb-purple);
   background-color: var(--tlb-purple);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6 9 17l-5-5'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233E3527' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6 9 17l-5-5'/></svg>");
   background-repeat: no-repeat;
   background-position: center;
   background-size: 12px 12px;
@@ -763,7 +763,7 @@
   border: 1px solid var(--tlb-stroke);
   border-radius: 1px;
   background: var(--tlb-purple);
-  box-shadow: 1px 1px 0 rgba(97, 82, 117, 0.35);
+  box-shadow: 1px 1px 0 rgba(107, 92, 72, 0.35);
   cursor: ew-resize;
 }
 
@@ -773,7 +773,7 @@
   border: 1px solid var(--tlb-stroke);
   border-radius: 1px;
   background: var(--tlb-purple);
-  box-shadow: 1px 1px 0 rgba(97, 82, 117, 0.35);
+  box-shadow: 1px 1px 0 rgba(107, 92, 72, 0.35);
   cursor: ew-resize;
 }
 

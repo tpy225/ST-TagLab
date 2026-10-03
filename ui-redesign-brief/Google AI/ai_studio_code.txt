@@ -1,6 +1,7 @@
 <script setup lang="ts">
 /**
  * 可拖动浮动面板:窗口主体 + 标题栏(拖动手柄) + 内容区 + 底栏 tab。
+ * 视觉架构:单色莫兰迪紫体系、复古深紫实体外框与投影、顶行全无边框极简、全隐滚动条。
  * 位置存 settings.panelPos,越界自动拉回。
  */
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
@@ -33,8 +34,6 @@ const TABS: { key: TlbTab; label: string; icon: string }[] = [
 
 function clampPos(x: number, y: number): { x: number; y: number } {
   const maxX = Math.max(0, window.innerWidth - size.value.w);
-  // 必须减去面板自身高度:保证整个面板(含底栏 tab)始终在视口内,
-  // 旧的 -48 会让拖存的位置在窗口变矮后底部大量溢出、看起来「塌陷」。
   const maxY = Math.max(0, window.innerHeight - size.value.h);
   return { x: Math.min(Math.max(x, 0), maxX), y: Math.min(Math.max(y, 0), maxY) };
 }
@@ -46,8 +45,6 @@ function layout(): void {
 
 /**
  * 窗口缩放专用布局:水平永远重新居中。
- * 否则窄屏占满时面板被钉在左/右缘(拖动还会把边缘位置存下),拉宽后就贴边不回中。
- * 纵向沿用保存的位置(仅越界拉回);结果一并落盘,下次打开仍居中。
  */
 function layoutOnResize(): void {
   size.value = { w: Math.min(PANEL_W, window.innerWidth - 16), h: Math.round(window.innerHeight * PANEL_H_RATIO) };
@@ -69,8 +66,6 @@ onMounted(() => {
   window.addEventListener('keydown', onKeydown);
 });
 
-/* 窗口缩放(含拖边变窄/变矮):rAF 节流重新布局,尺寸重算 + 水平重新居中,
-   避免面板停留在旧尺寸旧位置(溢出/贴边)。 */
 let resizeQueued = false;
 function onWindowResize(): void {
   if (resizeQueued || !ui.panelOpen) return;
@@ -86,6 +81,7 @@ onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown);
   window.removeEventListener('resize', onWindowResize);
 });
+
 watch(
   () => ui.panelOpen,
   open => {
@@ -98,13 +94,12 @@ function onKeydown(e: KeyboardEvent): void {
   if (e.key === 'Escape' && ui.panelOpen) closePanel();
 }
 
-/* ---- 外观:标题栏小圆钮,点击在 跟随酒馆 → 昼 → 夜 → 复古紫 间循环 ---- */
-const THEME_CYCLE: TlbTheme[] = ['st', 'day', 'night', 'retro'];
+/* ---- 外观:单色紫系统主题循环 ---- */
+const THEME_CYCLE: TlbTheme[] = ['st', 'day', 'night'];
 const THEME_LABEL: Record<TlbTheme, string> = {
   st: '跟随酒馆',
-  day: '昼 · 象牙白',
-  night: '夜 · 海军黑',
-  retro: '复古 · 暖陶米',
+  day: '昼 · 象牙紫韵',
+  night: '夜 · 幽紫夜影',
 };
 
 function cycleTheme(): void {
@@ -135,34 +130,61 @@ function onDragUp(): void {
 
 <template>
   <div class="tlb-panel" :style="style">
-    <div class="tlb-panel__head" @pointerdown="onDragDown" @pointermove="onDragMove" @pointerup="onDragUp" @pointercancel="onDragUp">
-      <Icon name="flask" />
-      <span class="tlb-panel__title">Tag 实验室</span>
-      <span class="tlb-hint tlb-panel__ver">v{{ version }}</span>
-      <button
-        class="tlb-btn tlb-btn--bare tlb-btn--sm tlb-btn--icon"
-        :title="`外观:${THEME_LABEL[settings.theme]}(点击切换)`"
-        @click.stop="cycleTheme"
-      >
-        <Icon name="color-swatch" />
-      </button>
-      <button class="tlb-btn tlb-btn--bare tlb-btn--sm tlb-btn--icon" title="关闭 (Esc)" @click.stop="closePanel()">
-        <Icon name="close" />
-      </button>
+    <!-- 顶部标题栏：整行全无边框，极简通栏兼拖动手柄 -->
+    <div
+      class="tlb-panel__head"
+      @pointerdown="onDragDown"
+      @pointermove="onDragMove"
+      @pointerup="onDragUp"
+      @pointercancel="onDragUp"
+    >
+      <div class="tlb-panel__brand">
+        <span class="tlb-panel__icon">
+          <Icon name="flask" :size="14" />
+        </span>
+        <span class="tlb-panel__title">Tag 实验室</span>
+        <span class="tlb-panel__ver">v{{ version }}</span>
+      </div>
+
+      <!-- 右侧控制操作区：与标题一样无边框，仅浅紫平涂背景 -->
+      <div class="tlb-panel__actions">
+        <button
+          type="button"
+          class="tlb-top-btn"
+          :title="`外观:${THEME_LABEL[settings.theme]}(点击切换)`"
+          @click.stop="cycleTheme"
+        >
+          <Icon name="color-swatch" :size="14" />
+          <span class="tlb-top-btn__text">{{ THEME_LABEL[settings.theme] }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="tlb-top-btn tlb-top-btn--icon"
+          title="关闭 (Esc)"
+          @click.stop="closePanel()"
+        >
+          <Icon name="close" :size="14" />
+        </button>
+      </div>
     </div>
 
-    <div class="tlb-panel__body tlb-scroll">
+    <!-- 内容区：完全隐藏原生滚动条 -->
+    <div class="tlb-panel__body">
       <slot />
     </div>
 
+    <!-- 底部主导航标签栏：紫色硬轮廓实体抽屉按键 -->
     <div class="tlb-panel__tabs">
       <button
         v-for="tab in TABS"
         :key="tab.key"
+        type="button"
         class="tlb-tab"
         :class="{ 'tlb-tab--on': ui.tab === tab.key }"
         @click.stop="ui.tab = tab.key"
       >
+        <Icon :name="tab.icon" :size="15" />
         <span>{{ tab.label }}</span>
       </button>
     </div>
@@ -170,26 +192,31 @@ function onDragUp(): void {
 </template>
 
 <style scoped>
+/* 仿旧电脑实体视窗外壳：复古深紫硬边框 + 实体硬阴影 */
 .tlb-panel {
   position: fixed;
   z-index: 10010;
   display: flex;
   flex-direction: column;
   background: var(--tlb-bg);
-  border: 1px solid var(--tlb-line);
-  border-radius: var(--tlb-radius-win);
-  box-shadow: var(--tlb-shadow);
+  border: 2px solid var(--tlb-stroke, #4A3E59);
+  border-radius: var(--tlb-radius-win, 10px);
+  box-shadow: var(--tlb-shadow-win, 5px 5px 0px var(--tlb-stroke, #4A3E59));
   overflow: hidden;
   pointer-events: auto;
+  box-sizing: border-box;
 }
 
+/* 顶部整行：完全无边框，无下划线，极简透气 */
 .tlb-panel__head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
+  justify-content: space-between;
+  height: 42px;
+  padding: 0 12px;
   background: var(--tlb-surface);
-  border-bottom: 1px solid var(--tlb-line);
+  border: none !important;
+  box-shadow: none !important;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -199,56 +226,156 @@ function onDragUp(): void {
   cursor: grabbing;
 }
 
+.tlb-panel__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tlb-panel__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--tlb-purple, #7E6C94);
+  border-radius: 4px;
+  color: #ffffff;
+}
+
 .tlb-panel__title {
-  font-weight: 700;
-  font-size: 14.5px;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--tlb-ink);
+  letter-spacing: 0.3px;
 }
 
 .tlb-panel__ver {
-  flex: 1;
+  font-family: var(--tlb-font-pixel, 'Pixelify Sans', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--tlb-purple-soft, #EDE8F3);
+  color: var(--tlb-purple-text, #4A3A60);
+  padding: 1px 6px;
+  border-radius: 3px;
 }
 
+/* 顶部整行按钮：全无边框，浅紫平涂色块 */
+.tlb-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tlb-top-btn {
+  height: 26px;
+  padding: 0 10px;
+  border: none !important;
+  box-shadow: none !important;
+  background: var(--tlb-purple-soft, #EDE8F3);
+  color: var(--tlb-purple-text, #4A3A60);
+  border-radius: var(--tlb-radius-sm, 4px);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  transition: filter var(--tlb-dur, 0.12s);
+}
+
+.tlb-top-btn:hover {
+  filter: brightness(0.95);
+}
+
+.tlb-top-btn--icon {
+  width: 26px;
+  padding: 0;
+  background: var(--tlb-surface-2);
+  color: var(--tlb-ink-soft);
+}
+
+.tlb-top-btn--icon:hover {
+  background: var(--tlb-purple-soft, #EDE8F3);
+  color: var(--tlb-ink);
+}
+
+.tlb-top-btn__text {
+  font-size: 11.5px;
+}
+
+/* 主体内容区：彻底隐藏原生滚动条，支持滚轮/触屏顺畅滚动 */
 .tlb-panel__body {
   flex: 1;
   min-height: 0;
-  padding: 0 16px;
+  padding: 0 14px;
+  overflow-y: auto;
   pointer-events: auto;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
+.tlb-panel__body::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
+
+/* 底部复古文件抽屉标签栏 (紫色硬边框抽屉) */
 .tlb-panel__tabs {
-  display: flex;
-  border-top: 1px solid var(--tlb-line);
+  height: 44px;
   background: var(--tlb-surface);
+  border-top: 2px solid var(--tlb-stroke, #4A3E59);
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 8px;
+  box-sizing: border-box;
 }
 
 .tlb-tab {
   flex: 1;
+  height: 30px;
+  border-radius: var(--tlb-radius-sm, 4px);
+  border: 1.5px solid var(--tlb-stroke, #4A3E59);
+  background: var(--tlb-surface-2);
+  color: var(--tlb-ink-soft);
+  font-size: 12.5px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 0;
-  border: none;
-  background: transparent;
-  color: var(--tlb-ink-soft);
-  font-size: 13px;
   cursor: pointer;
-  transition: color var(--tlb-dur) var(--tlb-ease), background var(--tlb-dur) var(--tlb-ease);
+  box-shadow: var(--tlb-shadow-btn, 2px 2px 0px var(--tlb-stroke, #4A3E59));
+  transition: transform var(--tlb-dur, 0.12s), box-shadow var(--tlb-dur, 0.12s), background var(--tlb-dur, 0.12s);
 }
 
 .tlb-tab:hover {
+  background: var(--tlb-purple-soft, #EDE8F3);
   color: var(--tlb-ink);
-  background: var(--tlb-surface-2);
 }
 
+.tlb-tab:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 transparent;
+}
+
+/* 激活态：实体紫填色 + 物理微内陷 */
 .tlb-tab--on {
-  color: var(--tlb-accent);
-  font-weight: 700;
-  box-shadow: inset 0 -2px 0 var(--tlb-accent);
+  background: var(--tlb-purple, #7E6C94);
+  color: var(--tlb-purple-ink, #ffffff);
+  box-shadow: inset 1.5px 1.5px 0 rgba(0, 0, 0, 0.25);
+  transform: translateY(1px);
 }
 
-/* ---- iPhone 等觸控機:撐滿安全區,避開狀態列/動態島與 Home 指示條 ----
-   內聯 left/top/width/height 由 JS 給桌面定位,移動端用 !important 覆寫。 */
+.tlb-tab--on:hover {
+  background: var(--tlb-purple, #7E6C94);
+  color: var(--tlb-purple-ink, #ffffff);
+}
+
+/* 移动端/小屏幕适配 */
 @media (max-width: 760px), (pointer: coarse) and (max-height: 480px) {
   .tlb-panel {
     top: calc(env(safe-area-inset-top, 0px) + 6px) !important;
@@ -257,7 +384,10 @@ function onDragUp(): void {
     left: calc(env(safe-area-inset-left, 0px) + 6px) !important;
     width: auto !important;
     height: auto !important;
-    border-radius: var(--tlb-radius);
+    border-radius: var(--tlb-radius-win, 10px);
+  }
+  .tlb-top-btn__text {
+    display: none;
   }
 }
 </style>
