@@ -48,7 +48,11 @@ defineEmits<{ copy: []; clear: []; zoom: [] }>();
 }
 
 .tlb-fieldbox:hover .tlb-ia,
-.tlb-fieldbox:focus-within .tlb-ia {
+.tlb-fieldbox:focus-within .tlb-ia,
+.tlb-gen__subhead:hover .tlb-ia,
+.tlb-gen__subhead:focus-within .tlb-ia,
+.tlb-gen__cardhead:hover .tlb-ia,
+.tlb-gen__cardhead:focus-within .tlb-ia {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0);

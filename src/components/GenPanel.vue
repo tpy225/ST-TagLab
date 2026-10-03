@@ -716,7 +716,10 @@ async function onVibeImport(e: Event): Promise<void> {
 
         <!-- 画师串输入框 -->
         <div>
-          <label class="tlb-label">画师串输入框</label>
+          <div class="tlb-label tlb-gen__subhead">
+            <span>画师串输入框</span>
+            <InputActions @copy="copyText(artistPrompt, '画师串')" @clear="clearArtist" @zoom="zoomTarget = 'artist'" />
+          </div>
           <div class="tlb-fieldbox">
             <textarea
               v-model="artistPrompt"
@@ -724,13 +727,15 @@ async function onVibeImport(e: Event): Promise<void> {
               rows="2"
               :placeholder="artistPlaceholder"
             />
-            <InputActions @copy="copyText(artistPrompt, '画师串')" @clear="clearArtist" @zoom="zoomTarget = 'artist'" />
           </div>
         </div>
 
         <!-- 正面提示词 -->
         <div>
-          <label class="tlb-label">正面提示词</label>
+          <div class="tlb-label tlb-gen__cardhead">
+            <span>正面提示词</span>
+            <InputActions @copy="copyText(promptDraft.text, '正面提示词')" @clear="clearPrompt" @zoom="zoomTarget = 'prompt'" />
+          </div>
           <div class="tlb-fieldbox">
             <textarea
               ref="promptEl"
@@ -741,7 +746,6 @@ async function onVibeImport(e: Event): Promise<void> {
               @keydown.meta.enter="generate"
               @keydown.ctrl.enter="generate"
             />
-            <InputActions @copy="copyText(promptDraft.text, '正面提示词')" @clear="clearPrompt" @zoom="zoomTarget = 'prompt'" />
           </div>
           <!-- 快捷输入(左右滑动)+ 生成按钮同一行 -->
           <div class="tlb-gen__quickrow">
@@ -781,7 +785,6 @@ async function onVibeImport(e: Event): Promise<void> {
           </div>
           <div v-if="showNegative" class="tlb-fieldbox">
             <textarea v-model="settings.nai.undesiredContent" class="tlb-textarea" rows="2" placeholder="留空 = 按模型取官方负面词" />
-            <InputActions @copy="copyText(settings.nai.undesiredContent, '负面提示词')" @clear="settings.nai.undesiredContent = ''" @zoom="zoomTarget = 'negative'" />
           </div>
         </div>
 
@@ -1067,6 +1070,12 @@ async function onVibeImport(e: Event): Promise<void> {
 /* 输入框右上角悬浮的操作群组(复制/清空/放大):所有输入框共用。
    悬浮条 hover/聚焦才浮现(见 InputActions.vue),文字可铺满,不再常驻留白。 */
 .tlb-fieldbox {
+  position: relative;
+}
+
+/* 操作鈕移進標題列後,以標題列為錨點 */
+.tlb-gen__subhead,
+.tlb-gen__cardhead {
   position: relative;
 }
 
