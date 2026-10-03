@@ -311,6 +311,11 @@
   color: #423A2E;
 }
 
+/* TlbSelect 控制鈕不掛原生背景三角(箭頭由元件自繪) */
+.tlb-root[data-theme='retro'] .tlb-select.tlb-selectdd__control {
+  background-image: none;
+}
+
 /* —— 畫師庫:搜索框改方角硬邊(同標籤篩選,不用膠囊) —— */
 .tlb-root[data-theme='retro'] .tlb-lib__search {
   height: 26px;
@@ -1156,6 +1161,7 @@
 }
 
 .tlb-root[data-theme='retro'] .tlb-set__linklist .tlb-hint {
+  font-size: 11px;
   color: rgba(107, 92, 72, 0.8);
 }
 

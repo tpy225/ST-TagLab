@@ -9,6 +9,8 @@ const package_json = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.js
 const package_version = String(package_json.version ?? '');
 
 export default defineConfig(({ mode }) => ({
+  // 擴展以 file:// 載入,資產走相對路徑(字體等不可用宿主根目錄絕對路徑)
+  base: './',
   define: {
     __TLB_VERSION__: JSON.stringify(package_version),
   },

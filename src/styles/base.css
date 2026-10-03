@@ -3,6 +3,18 @@
  * 全部只取 --tlb-* 令牌,组件不写死颜色;作用域限定 .tlb-root(shadow root 内的根容器)。
  */
 
+/* Pixelify Sans(可變 400-700,latin):本地打包,避免聯網字體載入造成切字閃動 */
+@font-face {
+  font-family: 'Pixelify Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../assets/fonts/PixelifySans-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+00BB-00BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 .tlb-root,
 .tlb-root * {
   box-sizing: border-box;
@@ -218,6 +230,12 @@
 
 .tlb-select:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--tlb-accent) 35%, transparent);
+}
+
+/* TlbSelect 自製下拉的控制鈕:箭頭由元件內 Icon 自繪,去掉背景三角與其專用右留白 */
+.tlb-select.tlb-selectdd__control {
+  padding-right: 8px;
+  background-image: none;
 }
 
 /* ---- 排版辅助 ---- */
