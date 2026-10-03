@@ -3,3 +3,6 @@ node_modules 2/
 src 2/
 .DS_Store
 *.log
+
+# UI 重設計參考素材(僅本機)
+ui-redesign-brief/
