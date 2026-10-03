@@ -174,12 +174,6 @@ function startCompare(): void {
   ui.galleryCompare.open = true;
 }
 
-function timeOf(ts: number): string {
-  const d = new Date(ts);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
 /* ══════════════ 批量标签 ══════════════ */
 const tagPopOpen = ref(false);
 const tagInput = ref('');
@@ -348,9 +342,9 @@ function openBatchWatermark(): void {
       >
         <img v-if="item.thumb || urls[item.id]" :src="item.thumb || urls[item.id]" alt="" loading="lazy" />
         <div v-else class="tlb-gal__ph"><Icon name="loader" spin /></div>
-        <figcaption class="tlb-gal__cap">
-          <span class="tlb-gal__time">{{ timeOf(item.createdAt) }}</span>
-          <span class="tlb-gal__seed">s{{ item.seed }}</span>
+        <figcaption v-if="item.tags?.length" class="tlb-gal__cap">
+          <span v-for="t in item.tags.slice(0, 3)" :key="t" class="tlb-gal__tag">#{{ t }}</span>
+          <span v-if="item.tags.length > 3" class="tlb-gal__tag tlb-gal__tag--more">+{{ item.tags.length - 3 }}</span>
         </figcaption>
 
         <!-- 选中角标(仅选取模式) -->
@@ -567,16 +561,24 @@ function openBatchWatermark(): void {
 
 .tlb-gal__cap {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 4px;
   padding: 4px 8px;
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--tlb-ink-soft);
   background: var(--tlb-surface);
 }
 
-.tlb-gal__seed {
-  font-family: var(--tlb-font-mono);
+.tlb-gal__tag {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tlb-gal__tag--more {
+  flex: none;
+  opacity: 0.7;
 }
 
 /* 默认模式:hover 右上删除 */

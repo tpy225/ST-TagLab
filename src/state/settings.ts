@@ -197,17 +197,28 @@ function normalizeCompareInterval(raw: unknown): { minSec: number; maxSec: numbe
 
 /**
  * 内置提示词迁移:
- * - 旧版默认(简短)存在默认 id 上 → 升级为详细版;
- * - profile.systemPrompt 若仍是旧简短默认 → 同步升级;
- * - 列表中没有简短版 → 补上(保留可切换)。自定义内容一律不动。
+ * - 内置两档(详细/简短)内容与名称一律重置为官方版,保证用户随时能切回默认;
+ * - 旧版没有简短版 → 补上(保留可切换);
+ * - 当前正选中内置档时,systemPrompt 同步为官方内容。自定义条目一律不动。
  */
 function migrateBuiltinPrompts(p: TlbBotProfile): TlbBotProfile {
-  const def = p.prompts.find(x => x.id === DEFAULT_BOT_PROMPT_ID);
-  if (def && def.content === SHORT_BOT_SYSTEM_PROMPT) def.content = DEFAULT_BOT_SYSTEM_PROMPT;
-  if (p.systemPrompt === SHORT_BOT_SYSTEM_PROMPT) p.systemPrompt = DEFAULT_BOT_SYSTEM_PROMPT;
-  if (!p.prompts.some(x => x.content === SHORT_BOT_SYSTEM_PROMPT)) {
+  const builtins: Record<string, () => TlbBotPrompt> = {
+    [DEFAULT_BOT_PROMPT_ID]: defaultBotPrompt,
+    [SHORT_BOT_PROMPT_ID]: shortBotPrompt,
+  };
+  for (const [id, factory] of Object.entries(builtins)) {
+    const found = p.prompts.find(x => x.id === id);
+    if (found) {
+      const canonical = factory();
+      found.name = canonical.name;
+      found.content = canonical.content;
+    }
+  }
+  if (!p.prompts.some(x => x.id === SHORT_BOT_PROMPT_ID)) {
     p.prompts.push(shortBotPrompt());
   }
+  if (p.activePromptId === DEFAULT_BOT_PROMPT_ID) p.systemPrompt = DEFAULT_BOT_SYSTEM_PROMPT;
+  else if (p.activePromptId === SHORT_BOT_PROMPT_ID) p.systemPrompt = SHORT_BOT_SYSTEM_PROMPT;
   return p;
 }
 

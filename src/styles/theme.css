@@ -408,19 +408,6 @@
   font-size: 10px;
 }
 
-/* 勾選角標:方角硬邊 */
-.tlb-root[data-theme='retro'] .tlb-lib__pickbadge {
-  top: 10px;
-  left: 10px;
-  width: 20px;
-  height: 20px;
-  border: 1.5px solid var(--tlb-stroke);
-  border-radius: 3px;
-  background: var(--tlb-purple);
-  color: var(--tlb-purple-ink);
-  box-shadow: 1px 1px 0 rgba(107, 92, 72, 0.4);
-}
-
 /* 卡上操作鈕:無底無框純圖示、緊貼排列,hover 變陶色(刪除不變紅) */
 .tlb-root[data-theme='retro'] .tlb-lib__cardbtn {
   width: 16px;
@@ -990,9 +977,9 @@
 .tlb-root[data-theme='retro'] .tlb-vibe__thumbimg {
   grid-column: 1;
   grid-row: 1 / span 3;
-  align-self: stretch; /* 上齊勾選框頂、下齊下拉框底 */
-  width: 64px;
-  height: auto;
+  align-self: start; /* 強制固定高度,頂緣齊勾選框 */
+  width: 60px !important;
+  height: 60px !important;
   min-height: 0;
   object-fit: cover;
   border: 1px solid var(--tlb-stroke);
@@ -1154,6 +1141,20 @@
 .tlb-root[data-theme='retro'] .tlb-select {
   font-family: var(--tlb-font-sans);
   font-size: 12px;
+}
+
+/* —— 設置頁「常用資源」:網名深色、說明句白色 —— */
+.tlb-root[data-theme='retro'] .tlb-set__link {
+  color: var(--tlb-ink);
+  font-weight: 700;
+}
+
+.tlb-root[data-theme='retro'] .tlb-set__link:hover {
+  color: var(--tlb-purple-text);
+}
+
+.tlb-root[data-theme='retro'] .tlb-set__linklist .tlb-hint {
+  color: #ffffff;
 }
 
 /* —— 手機安全區媒體查詢沿用 FloatingPanel 規則,僅覆蓋框線圓角 —— */

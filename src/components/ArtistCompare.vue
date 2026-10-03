@@ -23,6 +23,7 @@ import { imageUrl, ui } from '@/state/ui';
 import { loadVibes, vibeList } from '@/state/vibeList';
 import { exportArtists } from '@/sync/exportBundle';
 import { notify } from '@/st/toast';
+import { usePanelAnchor } from '@/use/panelAnchor';
 import type { TlbArtistPreset, TlbHistoryMeta } from '@/types';
 
 type LibMode = 'view' | 'batch' | 'compare';
@@ -164,6 +165,10 @@ function batchDelete(): void {
 /* ═══ 导出:先弹 vibe 选择 ═══ */
 
 const picker = reactive({ open: false, presetIds: [] as string[], vibeIds: [] as string[] });
+
+const { backdropEl: pickerBackdropEl, anchorStyle: pickerAnchorStyle } = usePanelAnchor(
+  computed(() => picker.open),
+);
 
 async function askExport(presetIds: string[]): Promise<void> {
   if (!presetIds.length) return;
@@ -434,11 +439,6 @@ function onResDragEnd(): void {
             <img v-if="previewSrc(a.id)" class="tlb-lib__img" :src="previewSrc(a.id)" :alt="a.name" />
             <span v-else class="tlb-lib__noimg">无预览图</span>
           </span>
-
-          <!-- 选中角标(仅选取模式) -->
-          <span v-if="picking && isSelected(a.id)" class="tlb-lib__pickbadge">
-            <Icon name="check" :size="13" />
-          </span>
         </figure>
         <p v-if="!settings.artistPresets.length" class="tlb-hint tlb-lib__picks-empty">
           还没有画师串:到「设置」从柏宝绘 / 智绘姬 / 小白X同步,或在「生成」页用画师串预设 ＋ 新建。
@@ -537,7 +537,8 @@ function onResDragEnd(): void {
     </div>
 
     <!-- 导出附带 vibe 选择弹窗 -->
-    <div v-if="picker.open" class="tlb-lib-vp-backdrop" @click.self="picker.open = false">
+    <div v-if="picker.open" ref="pickerBackdropEl" class="tlb-lib-vp-backdrop" @click.self="picker.open = false">
+      <div class="tlb-lib-vp-stage" :style="pickerAnchorStyle">
       <div class="tlb-lib-vp" role="dialog" aria-modal="true" aria-label="选择导出附带的 Vibe">
         <div class="tlb-lib-vp__head">
           <strong><Icon name="wand-sparkles" /> 选择附带的 Vibe</strong>
@@ -576,6 +577,7 @@ function onResDragEnd(): void {
             导出{{ picker.vibeIds.length ? `(含 ${picker.vibeIds.length} 个 vibe)` : '' }}
           </button>
         </div>
+      </div>
       </div>
     </div>
   </div>
@@ -748,22 +750,6 @@ function onResDragEnd(): void {
   justify-content: center;
   font-size: 12px;
   color: var(--tlb-ink-muted);
-}
-
-/* 选中角标:左上圆底对勾 */
-.tlb-lib__pickbadge {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  z-index: 2;
-  width: 22px;
-  height: 22px;
-  border-radius: var(--tlb-radius-pill);
-  background: var(--tlb-accent);
-  color: var(--tlb-accent-ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* 默认模式:hover 右下操作按钮组 */
@@ -1084,26 +1070,25 @@ function onResDragEnd(): void {
   inset: 0;
   z-index: 10025;
   background: rgba(0, 0, 0, 0.4);
+  /* 挂在 .tlb-root(pointer-events:none)下,必须恢复 */
+  pointer-events: auto;
+}
+
+/* 對齊浮動面板實測矩形的置中容器(視窗縮放不偏移) */
+.tlb-lib-vp-stage {
+  position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 桌面维持 20px;iPhone 上至少让出安全区 */
-  padding:
-    max(20px, calc(env(safe-area-inset-top, 0px) + 10px))
-    max(20px, calc(env(safe-area-inset-right, 0px) + 10px))
-    max(20px, calc(env(safe-area-inset-bottom, 0px) + 10px))
-    max(20px, calc(env(safe-area-inset-left, 0px) + 10px));
-  /* 挂在 .tlb-root(pointer-events:none)下,必须恢复 */
-  pointer-events: auto;
+  padding: 4px;
 }
 
 .tlb-lib-vp {
   display: flex;
   flex-direction: column;
   width: 460px;
-  max-width: calc(100vw - 40px);
-  max-height: 70vh;
-  max-height: min(70vh, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px));
+  max-width: 100%;
+  max-height: 100%;
   background: var(--tlb-surface-opaque, var(--tlb-surface));
   border: 1px solid var(--tlb-line);
   border-radius: var(--tlb-radius);

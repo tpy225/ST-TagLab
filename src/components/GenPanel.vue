@@ -38,6 +38,7 @@ import {
 import { notify } from '@/st/toast';
 import Icon from '@/components/Icon.vue';
 import InputActions from '@/components/InputActions.vue';
+import { usePanelAnchor } from '@/use/panelAnchor';
 import type { TlbHistoryMeta, TlbVibe, TlbVibeGroup } from '@/types';
 
 const showParams = ref(false);
@@ -235,6 +236,8 @@ async function insertQuickTag(tag: string): Promise<void> {
 const zoomTarget = ref<null | 'prompt' | 'artist' | 'negative'>(null);
 
 const ZOOM_TITLES: Record<string, string> = { prompt: '正面提示词', artist: '画师串', negative: '负面提示词' };
+
+const { backdropEl: zoomBackdropEl, anchorStyle: zoomAnchorStyle } = usePanelAnchor(zoomTarget);
 
 const zoomText = computed<string>({
   get: () => {
@@ -1026,7 +1029,8 @@ async function onVibeImport(e: Event): Promise<void> {
     </div>
 
     <!-- 放大输入框(画师串/正面词/负面词共用) -->
-    <div v-if="zoomTarget" class="tlb-modal-backdrop" @click.self="zoomTarget = null">
+    <div v-if="zoomTarget" ref="zoomBackdropEl" class="tlb-modal-backdrop" @click.self="zoomTarget = null">
+      <div class="tlb-modal-stage" :style="zoomAnchorStyle">
       <div class="tlb-modal" role="dialog" aria-modal="true" :aria-label="`放大编辑${ZOOM_TITLES[zoomTarget]}`">
         <div class="tlb-modal__head">
           <b>{{ ZOOM_TITLES[zoomTarget] }}</b>
@@ -1041,6 +1045,7 @@ async function onVibeImport(e: Event): Promise<void> {
         <div class="tlb-modal__foot">
           <button class="tlb-btn tlb-btn--accent" @click="zoomTarget = null">完成</button>
         </div>
+      </div>
       </div>
     </div>
   </div>
@@ -1308,21 +1313,20 @@ async function onVibeImport(e: Event): Promise<void> {
   inset: 0;
   z-index: 10020;
   background: rgba(0, 0, 0, 0.45);
+}
+
+/* 對齊浮動面板實測矩形的置中容器(視窗縮放不偏移) */
+.tlb-modal-stage {
+  position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 桌面維持 24px;iPhone 上至少讓出安全區 */
-  padding:
-    max(24px, calc(env(safe-area-inset-top, 0px) + 10px))
-    max(24px, calc(env(safe-area-inset-right, 0px) + 10px))
-    max(24px, calc(env(safe-area-inset-bottom, 0px) + 10px))
-    max(24px, calc(env(safe-area-inset-left, 0px) + 10px));
+  padding: 4px;
 }
 
 .tlb-modal {
   width: min(720px, 100%);
-  max-height: 86vh;
-  max-height: min(86vh, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px));
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--tlb-surface);

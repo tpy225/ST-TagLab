@@ -8,7 +8,7 @@ import { computed, onUnmounted, reactive, ref, watch } from 'vue';
 import { OFFICIAL_ENDPOINT_ID } from '@/constants';
 import { testConnection } from '@/nai/client';
 import { listModels } from '@/nai/bot';
-import { newId, settings } from '@/state/settings';
+import { DEFAULT_BOT_PROMPT_ID, SHORT_BOT_PROMPT_ID, newId, settings } from '@/state/settings';
 import { history, wipeHistory } from '@/state/historyList';
 import { loadVibes, vibeList, wipeVibes } from '@/state/vibeList';
 import { artistPreviews, setArtistPreview } from '@/state/artistPreviews';
@@ -328,6 +328,12 @@ async function fetchBotModels(): Promise<void> {
 /* ---- 系统提示词库(每档可存多条;操作围绕正文草稿 botPromptText) ---- */
 const botPromptLastOne = computed(() => activeBot.value.prompts.length <= 1);
 
+/** 内置默认提示词:只读,保证用户随时可切回;要改请用「＋另存」复制成自己的。 */
+const BOT_PROMPT_BUILTIN_IDS = new Set([DEFAULT_BOT_PROMPT_ID, SHORT_BOT_PROMPT_ID]);
+const activeBotPromptBuiltin = computed(() =>
+  BOT_PROMPT_BUILTIN_IDS.has(activeBot.value.activePromptId),
+);
+
 /** 切换已保存提示词:把内容载入正文草稿。 */
 function pickBotPrompt(e: Event): void {
   const p = activeBot.value;
@@ -337,9 +343,13 @@ function pickBotPrompt(e: Event): void {
   botPromptText.value = found.content;
 }
 
-/** 💾:把正文当前内容写回选中的提示词条目。 */
+/** 💾:把正文当前内容写回选中的提示词条目(内置默认只读)。 */
 function saveBotPrompt(): void {
   const p = activeBot.value;
+  if (activeBotPromptBuiltin.value) {
+    notify('warning', '内置默认提示词不可修改,点「＋」另存为自己的提示词');
+    return;
+  }
   const found = p.prompts.find(x => x.id === p.activePromptId);
   if (!found) return;
   if (!botPromptText.value.trim()) {
@@ -368,9 +378,10 @@ function saveBotPromptAs(): void {
   notify('success', `已另存为「${name}」`);
 }
 
-/** rename:重命名选中的提示词。 */
+/** rename:重命名选中的提示词(内置默认不可改名)。 */
 function renameBotPrompt(): void {
   const p = activeBot.value;
+  if (activeBotPromptBuiltin.value) return;
   const found = p.prompts.find(x => x.id === p.activePromptId);
   if (!found) return;
   const input = window.prompt('重新命名提示词:', found.name);
@@ -383,10 +394,10 @@ function renameBotPrompt(): void {
   found.name = name;
 }
 
-/** 🗑:删除当前提示词(至少保留一条)。 */
+/** 🗑:删除当前提示词(至少保留一条;内置默认不可删)。 */
 function removeBotPrompt(): void {
   const p = activeBot.value;
-  if (p.prompts.length <= 1) return;
+  if (p.prompts.length <= 1 || activeBotPromptBuiltin.value) return;
   const found = p.prompts.find(x => x.id === p.activePromptId);
   if (!found) return;
   if (!window.confirm(`删除提示词「${found.name}」?`)) return;
@@ -909,20 +920,27 @@ const RESOURCE_LINKS = [
             <select class="tlb-select tlb-presetrow__sel" :value="activeBot.activePromptId" @change="pickBotPrompt">
               <option v-for="pp in activeBot.prompts" :key="pp.id" :value="pp.id">{{ pp.name }}</option>
             </select>
-            <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" type="button" title="正文另存为新提示词(弹窗命名)" @click="saveBotPromptAs">
+            <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" type="button" title="正文另存为新提示词(弹窗命名,内置默认只读,请另存后修改)" @click="saveBotPromptAs">
               <Icon name="plus" />
             </button>
-            <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" type="button" title="把正文保存到所选提示词" @click="saveBotPrompt">
+            <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" type="button" :disabled="activeBotPromptBuiltin" title="把正文保存到所选提示词(内置默认不可改)" @click="saveBotPrompt">
               <Icon name="save" />
             </button>
-            <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" type="button" title="重新命名所选提示词" @click="renameBotPrompt">
+            <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" type="button" :disabled="activeBotPromptBuiltin" title="重新命名所选提示词(内置默认不可改名)" @click="renameBotPrompt">
               <Icon name="rename" />
             </button>
-            <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" type="button" :disabled="botPromptLastOne" title="删除所选提示词(至少保留一条)" @click="removeBotPrompt">
+            <button class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-btn--icon" type="button" :disabled="botPromptLastOne || activeBotPromptBuiltin" title="删除所选提示词(内置默认不可删)" @click="removeBotPrompt">
               <Icon name="trash" />
             </button>
           </div>
-          <textarea v-model="botPromptText" class="tlb-textarea" rows="4" placeholder="引导它只输出 tag" />
+          <textarea
+            v-model="botPromptText"
+            class="tlb-textarea tlb-botprompt__ta"
+            :class="{ 'is-readonly': activeBotPromptBuiltin }"
+            :readonly="activeBotPromptBuiltin"
+            rows="4"
+            :placeholder="activeBotPromptBuiltin ? '内置默认提示词(只读);要修改请点「＋」另存' : '引导它只输出 tag'"
+          />
         </div>
       </div>
     </section>
@@ -1106,6 +1124,17 @@ const RESOURCE_LINKS = [
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+/* ---- 系统提示词:正文框与上方按钮列拉开;只读态视觉提示 ---- */
+.tlb-botprompt__ta {
+  margin-top: 8px;
+}
+
+.tlb-botprompt__ta.is-readonly {
+  opacity: 0.85;
+  cursor: default;
+  resize: none;
 }
 
 /* ---- 底部常用资源链接(常驻,不折叠) ---- */
