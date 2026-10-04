@@ -177,12 +177,6 @@ function openWatermark(): void {
   ui.watermarkStudio.open = true;
 }
 
-function timeOf(ts: number): string {
-  const d = new Date(ts);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
 /* ══════════════ 标签 ══════════════ */
 
 const tagPopover = ref(false);
@@ -230,9 +224,8 @@ async function submitTagInput(): Promise<void> {
         </div>
 
         <div class="tlb-pv__meta">
-          <span>{{ item.width }}×{{ item.height }} · seed {{ item.seed }} · {{ item.model }}</span>
+          <span>{{ item.width }}×{{ item.height }} · seed {{ item.seed }}</span>
           <span class="tlb-grow" />
-          <span>{{ timeOf(item.createdAt) }}</span>
           <span>{{ history.items.findIndex(i => i.id === item!.id) + 1 }} / {{ history.items.length }}</span>
         </div>
 

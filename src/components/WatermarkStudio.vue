@@ -484,14 +484,16 @@ function deletePreset(): void {
             <button class="tlb-btn tlb-btn--ghost tlb-btn--sm" @click="clearSticker">移除</button>
           </div>
 
-          <label class="tlb-field">
-            <span>大小 {{ cfg.stickerSizePct }}%</span>
+          <div class="tlb-field tlb-wm__slider">
+            <span>大小</span>
             <input v-model.number="cfg.stickerSizePct" type="range" min="2" max="50" step="1" />
-          </label>
-          <label class="tlb-field">
-            <span>透明度 {{ cfg.opacity }}</span>
+            <input v-model.number="cfg.stickerSizePct" class="tlb-wm__num" type="number" min="2" max="50" step="1" title="%" />
+          </div>
+          <div class="tlb-field tlb-wm__slider">
+            <span>透明度</span>
             <input v-model.number="cfg.opacity" type="range" min="0.05" max="1" step="0.05" />
-          </label>
+            <input v-model.number="cfg.opacity" class="tlb-wm__num" type="number" min="0.05" max="1" step="0.05" title="0.05~1" />
+          </div>
         </template>
 
         <!-- 文字參數(平鋪/單個) -->
@@ -501,15 +503,17 @@ function deletePreset(): void {
             <input v-model="cfg.text" class="tlb-input" />
           </label>
 
-          <label class="tlb-field">
-            <span>字級 {{ cfg.fontPct }}%</span>
+          <div class="tlb-field tlb-wm__slider">
+            <span>字級</span>
             <input v-model.number="cfg.fontPct" type="range" min="1" max="15" step="0.5" />
-          </label>
+            <input v-model.number="cfg.fontPct" class="tlb-wm__num" type="number" min="1" max="15" step="0.5" title="%" />
+          </div>
 
-          <label class="tlb-field">
-            <span>透明度 {{ cfg.opacity }}</span>
+          <div class="tlb-field tlb-wm__slider">
+            <span>透明度</span>
             <input v-model.number="cfg.opacity" type="range" min="0.05" max="1" step="0.05" />
-          </label>
+            <input v-model.number="cfg.opacity" class="tlb-wm__num" type="number" min="0.05" max="1" step="0.05" title="0.05~1" />
+          </div>
 
           <div class="tlb-field tlb-field--row">
             <span>顏色</span>
@@ -519,14 +523,16 @@ function deletePreset(): void {
 
         <!-- 平鋪專屬 -->
         <template v-if="cfg.mode === 'tile'">
-          <label class="tlb-field">
-            <span>旋轉 {{ cfg.rotation }}°</span>
+          <div class="tlb-field tlb-wm__slider">
+            <span>旋轉</span>
             <input v-model.number="cfg.rotation" type="range" min="-90" max="0" step="1" />
-          </label>
-          <label class="tlb-field">
-            <span>間距 {{ cfg.gapMul.toFixed(1) }}</span>
+            <input v-model.number="cfg.rotation" class="tlb-wm__num" type="number" min="-90" max="0" step="1" title="-90°~0°" />
+          </div>
+          <div class="tlb-field tlb-wm__slider">
+            <span>間距</span>
             <input v-model.number="cfg.gapMul" type="range" min="1.2" max="5" step="0.1" />
-          </label>
+            <input v-model.number="cfg.gapMul" class="tlb-wm__num" type="number" min="1.2" max="5" step="0.1" title="1.2~5" />
+          </div>
         </template>
 
         <!-- 單個/貼紙共用:九宮格與邊距 -->
@@ -543,10 +549,11 @@ function deletePreset(): void {
               />
             </div>
           </div>
-          <label class="tlb-field">
-            <span>邊距 {{ cfg.marginPct }}%</span>
+          <div class="tlb-field tlb-wm__slider">
+            <span>邊距</span>
             <input v-model.number="cfg.marginPct" type="range" min="0" max="10" step="0.5" />
-          </label>
+            <input v-model.number="cfg.marginPct" class="tlb-wm__num" type="number" min="0" max="10" step="0.5" title="%" />
+          </div>
         </template>
 
         <span class="tlb-grow" />
@@ -662,6 +669,12 @@ function deletePreset(): void {
   border-left: 1px solid var(--tlb-line);
 }
 
+/* overflow:hidden 的分節條作為 flex 項時自動最小高度為 0,空間不足會被壓塌;
+   除彈性間距外所有直接子項固定不壓縮,超出由控制區滾動 */
+.tlb-wm__controls > :not(.tlb-grow) {
+  flex: none;
+}
+
 .tlb-seg {
   display: flex;
   border: 1px solid var(--tlb-line);
@@ -701,6 +714,54 @@ function deletePreset(): void {
 .tlb-field input[type='range'] {
   width: 100%;
   accent-color: var(--tlb-accent);
+}
+
+/* 滑杆行:標籤 + 滑杆 + 可手填數值(同 vibe 強度行口徑) */
+.tlb-wm__slider {
+  flex: none;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.tlb-wm__slider > span {
+  flex: none;
+  white-space: nowrap;
+}
+
+.tlb-wm__slider input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+
+.tlb-wm__num {
+  flex: none;
+  width: 52px;
+  padding: 2px 4px;
+  font-size: 12px;
+  text-align: right;
+  color: var(--tlb-ink);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  font-family: inherit;
+}
+
+.tlb-wm__num:hover {
+  border-color: var(--tlb-line);
+}
+
+.tlb-wm__num:focus {
+  outline: none;
+  border-color: var(--tlb-accent);
+  background: var(--tlb-surface);
+}
+
+.tlb-wm__num::-webkit-outer-spin-button,
+.tlb-wm__num::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .tlb-wm__color {
