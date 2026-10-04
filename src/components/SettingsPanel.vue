@@ -968,15 +968,14 @@ const RESOURCE_LINKS = [
       </button>
       <div v-if="open.sync" class="tlb-card__body">
         <p class="tlb-hint">
-          单向只读读取对方数据（绝不改动对方）：画师串、正/负词、预览图、vibe 与 vibe 组。
-          画师串<b>以名称为准，重名自动覆盖</b>；先同步一家再同步另一家时，后者独有的预览图/vibe 会补进同名条目。
+          画师串<b>以名称为准，重名自动覆盖</b>。
           vibe 按编码指纹增量合并、<b>导入后默认不启用</b>。可重复点按更新。
         </p>
 
         <div class="tlb-sync-item">
           <div class="tlb-sync-item__meta">
             <b>柏宝绘 ST-BaiBai-Image</b>
-            <span class="tlb-hint">NAI 配置（接入点/模型/采样器/尺寸/质量词）、画师串、预览图、vibe 与组；负词为完整口径原样搬。</span>
+            <span class="tlb-hint">NAI 配置、画师串、预览图、vibe 与组。</span>
             <span class="tlb-sync-item__time">上次：{{ syncTime(settings.lastBaibaiSyncAt) }}</span>
           </div>
           <button class="tlb-btn tlb-btn--accent tlb-btn--sm" :disabled="anySyncing" @click="runSync('baibai')">
@@ -988,7 +987,7 @@ const RESOURCE_LINKS = [
         <div class="tlb-sync-item">
           <div class="tlb-sync-item__meta">
             <b>智绘姬 st-chatu8</b>
-            <span class="tlb-hint">画师串、正/负词(已烤入官方默认负面词基线)、预览图、vibe 预设与组;需在智绘姬里保存过数据。</span>
+            <span class="tlb-hint">画师串、正/负词、预览图、vibe 预设与组;需在智绘姬里保存过数据。</span>
             <span class="tlb-sync-item__time">上次：{{ syncTime(settings.lastChatu8SyncAt) }}</span>
           </div>
           <button class="tlb-btn tlb-btn--accent tlb-btn--sm" :disabled="anySyncing" @click="runSync('chatu8')">
@@ -1000,7 +999,7 @@ const RESOURCE_LINKS = [
         <div class="tlb-sync-item">
           <div class="tlb-sync-item__meta">
             <b>小白X LittleWhiteBox(NovelDraw)</b>
-            <span class="tlb-hint">画师串、正/负词、缩略预览图、vibe 库与组；读取服务器上的 LittleWhiteBox_NovelDraw.json。</span>
+            <span class="tlb-hint">画师串、正/负词、预览图、vibe 库与组。</span>
             <span class="tlb-sync-item__time">上次：{{ syncTime(settings.lastXiaobaiSyncAt) }}</span>
           </div>
           <button class="tlb-btn tlb-btn--accent tlb-btn--sm" :disabled="anySyncing" @click="runSync('xiaobaix')">

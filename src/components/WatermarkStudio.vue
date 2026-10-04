@@ -781,7 +781,7 @@ function deletePreset(): void {
 }
 
 .tlb-wm__pos {
-  aspect-ratio: 1;
+  height: 24px;
   border: 1px solid var(--tlb-line);
   border-radius: var(--tlb-radius-sm);
   background: var(--tlb-surface-2);

@@ -990,7 +990,7 @@ async function onVibeImport(e: Event): Promise<void> {
 
         <p v-if="error" class="tlb-gen__error tlb-mgen__msg">{{ error }}</p>
         <p v-else-if="status" class="tlb-hint tlb-mgen__msg">{{ status }}</p>
-        <p v-else-if="!activeEndpoint().key" class="tlb-hint tlb-mgen__msg">未配置 API Key:到「设置」填写,或点「从柏宝绘同步」。</p>
+        <p v-else-if="!activeEndpoint().key" class="tlb-hint tlb-mgen__msg">未配置 API Key：到「设置」填写，或同步你的生图插件。</p>
       </div>
     </div>
 
@@ -1115,7 +1115,7 @@ async function onVibeImport(e: Event): Promise<void> {
 
         <p v-if="status && !error" class="tlb-hint">{{ status }}</p>
         <p v-if="error" class="tlb-gen__error">{{ error }}</p>
-        <p v-if="!activeEndpoint().key" class="tlb-hint">未配置 API Key:到「设置」填写,或点「从柏宝绘同步」。</p>
+        <p v-if="!activeEndpoint().key" class="tlb-hint">未配置 API Key：到「设置」填写，或同步你的生图插件。</p>
       </div>
 
       <!-- 右列:Vibe Transfer + 生图参数(直连生效;可单独勾选或多勾选) -->
