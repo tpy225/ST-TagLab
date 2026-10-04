@@ -24,7 +24,10 @@ import { loadVibes, vibeList } from '@/state/vibeList';
 import { exportArtists } from '@/sync/exportBundle';
 import { notify } from '@/st/toast';
 import { usePanelAnchor } from '@/use/panelAnchor';
+import { useIsMobile } from '@/use/useIsMobile';
 import type { TlbArtistPreset, TlbHistoryMeta } from '@/types';
+
+const isMobile = useIsMobile();
 
 type LibMode = 'view' | 'batch' | 'compare';
 
@@ -297,7 +300,7 @@ function onResDragEnd(): void {
 </script>
 
 <template>
-  <div class="tlb-lib">
+  <div class="tlb-lib" :class="{ 'tlb-lib--mobile': isMobile }">
     <!-- 工具栏(单行,所有模式共用):搜索框常驻最左,右侧按模式切换控件 -->
     <div class="tlb-lib__toolbar">
       <div class="tlb-row tlb-row--wrap tlb-lib__toolbar-row">
@@ -1179,12 +1182,33 @@ function onResDragEnd(): void {
   text-align: center;
 }
 
-.tlb-lib-vp__foot {
+.tlb-lib__results-foot {
   flex: none;
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 10px 14px;
   border-top: 1px solid var(--tlb-line);
+}
+
+/* ---- 手機:搜索獨佔一行;畫師卡片每行 3 個 ---- */
+.tlb-lib--mobile {
+  gap: 8px;
+  padding: 10px 0;
+}
+
+.tlb-lib--mobile .tlb-lib__search {
+  flex: 1 1 100%;
+  width: auto;
+}
+
+/* 默認態說明 tip 在手機上收起,批量管理/生成對比/畫師數落第二行 */
+.tlb-lib--mobile .tlb-lib__tip {
+  display: none;
+}
+
+.tlb-lib--mobile .tlb-lib__picks {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
 </style>

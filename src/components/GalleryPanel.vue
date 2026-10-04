@@ -16,6 +16,9 @@ import { history, loadHistory, removeHistory, wipeHistory, allImageTags, batchAd
 import { imageUrl, ui } from '@/state/ui';
 import { notify } from '@/st/toast';
 import Icon from '@/components/Icon.vue';
+import { useIsMobile } from '@/use/useIsMobile';
+
+const isMobile = useIsMobile();
 
 onMounted(() => {
   if (!history.loaded) void loadHistory();
@@ -226,7 +229,7 @@ function openBatchWatermark(): void {
 </script>
 
 <template>
-  <div class="tlb-gal">
+  <div class="tlb-gal" :class="{ 'tlb-gal--mobile': isMobile }">
     <!-- 工具栏 -->
     <div class="tlb-gal__toolbar">
       <!-- 默认:两个入口键 -->
@@ -245,7 +248,7 @@ function openBatchWatermark(): void {
         />
         <span class="tlb-grow" />
         <span class="tlb-hint">{{ shown.length }} 张 · 点图预览</span>
-        <button v-if="history.items.length" class="tlb-btn tlb-btn--ghost tlb-btn--sm" @click="clearAll">清空全部</button>
+        <button v-if="history.items.length" class="tlb-btn tlb-btn--ghost tlb-btn--sm tlb-gal__clearall" @click="clearAll">清空全部</button>
       </div>
 
       <!-- 批量管理展开:全选 / 下载 / 删除 / 完成 -->
@@ -635,5 +638,21 @@ function openBatchWatermark(): void {
 .tlb-gal__empty .tlb-icon {
   font-size: 32px;
   opacity: 0.6;
+}
+
+/* ---- 手機:標籤篩選獨佔第一行;批量管理/多圖對比/張數落第二行,清空全部收起 ---- */
+.tlb-gal--mobile {
+  gap: 8px;
+  padding: 10px 0;
+}
+
+.tlb-gal--mobile .tlb-gal__find {
+  order: -1;
+  flex: 1 1 100%;
+  width: auto;
+}
+
+.tlb-gal--mobile .tlb-gal__clearall {
+  display: none;
 }
 </style>

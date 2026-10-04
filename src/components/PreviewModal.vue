@@ -9,6 +9,9 @@ import { currentItem, history, removeHistory, stepSelection, allImageTags, parse
 import { imageUrl, openPanel, ui, cachedImage } from '@/state/ui';
 import { notify } from '@/st/toast';
 import Icon from '@/components/Icon.vue';
+import { useIsMobile } from '@/use/useIsMobile';
+
+const isMobile = useIsMobile();
 
 const item = computed(() => currentItem());
 const url = ref<string | null>(null);
@@ -109,12 +112,29 @@ function close(): void {
   ui.previewOpen = false;
 }
 
-function prev(): void {
-  stepSelection(-1);
+/* ---- 左右滑動翻頁(手機):無箭頭,横向位移超閾值且明顯占主導才切換 ---- */
+const stageEl = ref<HTMLElement | null>(null);
+let swipeStart: { x: number; y: number } | null = null;
+
+function onStageDown(e: PointerEvent): void {
+  if (!isMobile.value || history.items.length <= 1) return;
+  if ((e.target as HTMLElement).closest('button,a,input')) return;
+  swipeStart = { x: e.clientX, y: e.clientY };
+  (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
 }
 
-function next(): void {
-  stepSelection(1);
+function onStageMove(e: PointerEvent): void {
+  if (!swipeStart) return;
+  const dx = e.clientX - swipeStart.x;
+  const dy = e.clientY - swipeStart.y;
+  if (Math.abs(dx) > 56 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+    stepSelection(dx < 0 ? 1 : -1); // 左滑 = 更舊,右滑 = 更新
+    swipeStart = null;
+  }
+}
+
+function onStageUp(): void {
+  swipeStart = null;
 }
 
 async function download(): Promise<void> {
@@ -196,12 +216,18 @@ async function submitTagInput(): Promise<void> {
       <button class="tlb-pv__close" title="关闭" @click="close"><Icon name="close" /></button>
 
       <template v-if="item">
-        <button v-if="history.items.length > 1" class="tlb-pv__nav tlb-pv__nav--l" @click="prev"><Icon name="chevron-left" /></button>
-        <div class="tlb-pv__stage">
-          <img v-if="url" :src="url" alt="" />
+        <div
+          ref="stageEl"
+          class="tlb-pv__stage"
+          :class="{ 'tlb-pv__stage--swipe': isMobile && history.items.length > 1 }"
+          @pointerdown="onStageDown"
+          @pointermove="onStageMove"
+          @pointerup="onStageUp"
+          @pointercancel="onStageUp"
+        >
+          <img v-if="url" :src="url" alt="" draggable="false" />
           <div v-else class="tlb-pv__loading"><Icon name="loader" spin /></div>
         </div>
-        <button v-if="history.items.length > 1" class="tlb-pv__nav tlb-pv__nav--r" @click="next"><Icon name="chevron-right" /></button>
 
         <div class="tlb-pv__meta">
           <span>{{ item.width }}×{{ item.height }} · seed {{ item.seed }} · {{ item.model }}</span>
@@ -332,48 +358,24 @@ async function submitTagInput(): Promise<void> {
   background: var(--tlb-surface-2-opaque, var(--tlb-surface-2));
 }
 
+/* 手機多張時:整個圖區接管橫滑翻頁,縱滑仍交給頁面 */
+.tlb-pv__stage--swipe {
+  touch-action: pan-y;
+  user-select: none;
+}
+
 .tlb-pv__stage img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   user-select: none;
+  -webkit-user-drag: none;
 }
 
 .tlb-pv__loading {
   color: var(--tlb-ink-muted);
   font-size: 28px;
   padding: 80px 0;
-}
-
-.tlb-pv__nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-  width: 30px;
-  height: 30px;
-  font-size: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: var(--tlb-radius-pill);
-  background: rgba(0, 0, 0, 0.45);
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background var(--tlb-dur) var(--tlb-ease);
-}
-
-.tlb-pv__nav:hover {
-  background: rgba(0, 0, 0, 0.72);
-}
-
-.tlb-pv__nav--l {
-  left: 12px;
-}
-
-.tlb-pv__nav--r {
-  right: 12px;
 }
 
 .tlb-pv__meta {

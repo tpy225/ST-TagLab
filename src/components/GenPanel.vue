@@ -797,8 +797,8 @@ async function onVibeImport(e: Event): Promise<void> {
           <textarea
             ref="promptEl"
             v-model="promptDraft.text"
-            class="tlb-textarea tlb-mgen__ta"
-            rows="3"
+            class="tlb-textarea tlb-mgen__ta tlb-mgen__ta--prompt"
+            rows="4"
             placeholder="或使用自然语言描述后点击AI，让提示词助手生成协助你。"
             @keydown.meta.enter.prevent="generate"
             @keydown.ctrl.enter.prevent="generate"
@@ -2230,19 +2230,30 @@ label.tlb-vibe__groupbtn {
 
 /* (空狀態復用桌面 .tlb-gen__empty) */
 
+/* 翻頁箭頭:視覺與桌面版 .tlb-gen__nav 完全一致(圓形深色半透明白邊) */
 .tlb-mgen__nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 28px;
-  height: 28px;
+  z-index: 1;
+  width: 26px;
+  height: 26px;
+  font-size: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--tlb-radius-pill);
+  background: rgba(0, 0, 0, 0.38);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.85;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  border-radius: var(--tlb-radius-sm);
-  background: var(--tlb-overlay);
-  color: #fff;
+  transition: background var(--tlb-dur) var(--tlb-ease), opacity var(--tlb-dur) var(--tlb-ease);
+}
+
+.tlb-mgen__nav:hover {
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 1;
 }
 
 .tlb-mgen__nav--l {

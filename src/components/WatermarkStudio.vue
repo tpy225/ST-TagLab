@@ -13,6 +13,9 @@ import { cachedImage, ui } from '@/state/ui';
 import { notify } from '@/st/toast';
 import Icon from '@/components/Icon.vue';
 import TlbSelect from '@/components/TlbSelect.vue';
+import { useIsMobile } from '@/use/useIsMobile';
+
+const isMobile = useIsMobile();
 
 /* ---- 尺寸:实测浮动面板矩形(同 PreviewModal) ---- */
 
@@ -431,7 +434,7 @@ function deletePreset(): void {
 
 <template>
   <div ref="backdropEl" class="tlb-wm-backdrop" @click.self="close">
-    <div class="tlb-wm" role="dialog" aria-modal="true" aria-label="水印工坊" :style="dialogStyle">
+    <div class="tlb-wm" :class="{ 'tlb-wm--mobile': isMobile }" role="dialog" aria-modal="true" aria-label="水印工坊" :style="dialogStyle">
       <!-- 左:预览舞台 -->
       <div ref="stageEl" class="tlb-wm__stage">
         <button class="tlb-wm__close" title="关闭" @click="close"><Icon name="close" /></button>
@@ -781,5 +784,30 @@ function deletePreset(): void {
   min-width: 0;
   min-height: 0;
   height: 26px;
+}
+
+/* ---- 手機:上下布局(舞台上、控制區下),控制區獨立滾動 ---- */
+.tlb-wm--mobile {
+  flex-direction: column;
+}
+
+.tlb-wm--mobile .tlb-wm__stage {
+  flex: 1 1 auto;
+}
+
+.tlb-wm--mobile .tlb-wm__controls {
+  flex: none;
+  width: auto;
+  max-height: 46%;
+  border-left: none;
+  border-top: 1px solid var(--tlb-line);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 桌面右箭頭定位扣的是右側控制欄寬度;上下布局改貼右緣 */
+.tlb-wm--mobile .tlb-wm__nav--r {
+  left: auto;
+  right: 12px;
 }
 </style>
