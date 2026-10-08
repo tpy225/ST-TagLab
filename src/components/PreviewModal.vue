@@ -228,6 +228,19 @@ async function submitTagInput(): Promise<void> {
         >
           <img v-if="url" :src="url" alt="" draggable="false" />
           <div v-else class="tlb-pv__loading"><Icon name="loader" spin /></div>
+
+          <button
+            v-if="!isMobile && history.items.length > 1"
+            class="tlb-pv__nav tlb-pv__nav--prev"
+            title="上一張"
+            @click="stepSelection(-1)"
+          ><Icon name="chevron-left" :size="22" /></button>
+          <button
+            v-if="!isMobile && history.items.length > 1"
+            class="tlb-pv__nav tlb-pv__nav--next"
+            title="下一張"
+            @click="stepSelection(1)"
+          ><Icon name="chevron-right" :size="22" /></button>
         </div>
 
         <div class="tlb-pv__meta">
@@ -350,6 +363,7 @@ async function submitTagInput(): Promise<void> {
 }
 
 .tlb-pv__stage {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -364,6 +378,33 @@ async function submitTagInput(): Promise<void> {
   touch-action: pan-y;
   user-select: none;
 }
+
+.tlb-pv__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 40px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--tlb-line);
+  border-radius: var(--tlb-radius-sm);
+  background: var(--tlb-surface-opaque, var(--tlb-surface));
+  color: var(--tlb-ink-soft);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  transition: color var(--tlb-dur) var(--tlb-ease), background var(--tlb-dur) var(--tlb-ease);
+}
+
+.tlb-pv__nav:hover {
+  color: var(--tlb-ink);
+  background: var(--tlb-surface-2);
+}
+
+.tlb-pv__nav--prev { left: 12px; }
+.tlb-pv__nav--next { right: 12px; }
 
 .tlb-pv__stage img {
   max-width: 100%;
