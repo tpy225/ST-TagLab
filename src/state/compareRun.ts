@@ -9,10 +9,10 @@
  */
 import { reactive } from 'vue';
 
-import { naiRandomSeed, parseResolution } from '@/constants';
+import { naiDefaultUndesired, naiRandomSeed, parseResolution } from '@/constants';
 import { generateNaiImage } from '@/nai/client';
 import { addHistory } from '@/state/historyList';
-import { activeEndpoint, globalQualityTags, globalUndesired, settings } from '@/state/settings';
+import { activeEndpoint, globalQualityTags, settings } from '@/state/settings';
 import { imageUrl, promptDraft } from '@/state/ui';
 import { notify } from '@/st/toast';
 
@@ -117,7 +117,7 @@ export async function startCompareRun(presetIds: string[]): Promise<void> {
         seed: compareRun.seed,
         artistPrompt: p.prompt,
         qualityTags: p.quality.trim() || globalQualityTags(),
-        negative: p.negative.trim() || globalUndesired(),
+        negative: p.negative.trim() || naiDefaultUndesired(settings.nai.model),
       });
       await addHistory(res.meta, res.blob);
       row.imageId = res.meta.id;

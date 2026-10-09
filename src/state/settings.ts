@@ -389,9 +389,12 @@ export function resolveQualityTags(): string {
   return activeArtistPreset()?.quality.trim() || settings.nai.qualityTags.trim() || naiDefaultQualityTags(settings.nai.model);
 }
 
-/** 负面词三级回落:配方绑定 → 全局覆写 → 模型官方默认。 */
+/** 负面词:选中画师串时只用该预设自己的绑定值;未选预设时用输入框的临时值;皆空 → 模型官方默认。
+ * 预设之间完全独立,不存在全局覆写层。 */
 export function resolveUndesired(): string {
-  return activeArtistPreset()?.negative.trim() || settings.nai.undesiredContent.trim() || naiDefaultUndesired(settings.nai.model);
+  const preset = activeArtistPreset();
+  const raw = preset ? preset.negative : settings.nai.undesiredContent;
+  return raw.trim() || naiDefaultUndesired(settings.nai.model);
 }
 
 /** 当前生效画师串原文(未选/全空白 → 空串)。
@@ -409,11 +412,6 @@ export function selectArtist(id: string): void {
 /** 全局质量词(忽略画师串绑定):覆写 → 模型官方默认。多画师串对比用它。 */
 export function globalQualityTags(): string {
   return settings.nai.qualityTags.trim() || naiDefaultQualityTags(settings.nai.model);
-}
-
-/** 全局负面词(忽略画师串绑定):覆写 → 模型官方默认。多画师串对比用它。 */
-export function globalUndesired(): string {
-  return settings.nai.undesiredContent.trim() || naiDefaultUndesired(settings.nai.model);
 }
 
 /** 画师串库的增删改(P0 直接操作 settings,保存自动落盘)。 */

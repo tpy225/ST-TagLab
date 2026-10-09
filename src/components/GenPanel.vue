@@ -108,6 +108,22 @@ const artistPrompt = computed<string>({
   },
 });
 
+/** 负面词:选中预设时直接读写该预设(即时落盘,各预设独立);未选预设时才是临时输入值。留空 = 官方默认。 */
+const negativePrompt = computed<string>({
+  get: () => activeArtistPreset()?.negative ?? settings.nai.undesiredContent,
+  set: (v: string) => {
+    const p = activeArtistPreset();
+    if (p) p.negative = v;
+    else settings.nai.undesiredContent = v;
+  },
+});
+
+const negativeHint = computed(() =>
+  activeArtistPreset()
+    ? '（當前畫師串專屬，自動保存；留空 = 官方默認）'
+    : '（留空 = 官方默认）',
+);
+
 /** 下拉手动选择(含「不使用」):清掉临时画师串草稿。 */
 function onArtistPick(id: string | number): void {
   selectArtist(String(id));
@@ -143,7 +159,7 @@ function saveArtistAs(): void {
     notify('warning', '名称不能为空');
     return;
   }
-  const item = artistStore.add({ name, prompt: text });
+  const item = artistStore.add({ name, prompt: text, negative: cur ? cur.negative : '' });
   selectArtist(item.id);
   notify('success', `已另存为「${name}」`);
 }
@@ -278,7 +294,7 @@ const zoomText = computed<string>({
       case 'artist':
         return artistPrompt.value;
       case 'negative':
-        return settings.nai.undesiredContent;
+        return negativePrompt.value;
       default:
         return promptDraft.text;
     }
@@ -289,7 +305,7 @@ const zoomText = computed<string>({
         artistPrompt.value = v;
         break;
       case 'negative':
-        settings.nai.undesiredContent = v;
+        negativePrompt.value = v;
         break;
       default:
         promptDraft.text = v;
@@ -827,10 +843,10 @@ async function onVibeImport(e: Event): Promise<void> {
             <button class="tlb-mgen__neghead" type="button" @click="showNegative = !showNegative">
               <Icon class="tlb-mgen__negarrow" :class="{ 'is-closed': !showNegative }" name="chevron-down" :size="13" />
               負面提示詞
-              <span class="tlb-hint">（覆写；留空 = 官方默认）</span>
+              <span class="tlb-hint">{{ negativeHint }}</span>
             </button>
             <div v-if="showNegative" class="tlb-fieldbox tlb-gen__negbox">
-              <textarea v-model="settings.nai.undesiredContent" class="tlb-textarea" rows="2" placeholder="留空 = 按模型取官方负面词" />
+              <textarea v-model="negativePrompt" class="tlb-textarea" rows="2" placeholder="留空 = 按模型取官方负面词" />
               <button class="tlb-btn tlb-btn--bare tlb-gen__negzoom" type="button" title="放大" @click="zoomTarget = 'negative'"><Icon name="maximize" /></button>
             </div>
           </div>
@@ -1099,11 +1115,11 @@ async function onVibeImport(e: Event): Promise<void> {
             @keydown.space.prevent="showNegative = !showNegative"
           >
             负面提示词
-            <span class="tlb-hint">（覆写；留空 = 官方默认）</span>
+            <span class="tlb-hint">{{ negativeHint }}</span>
             <Icon class="tlb-gen__negarrow" :class="{ 'tlb-gen__negarrow--closed': !showNegative }" name="chevron-down" />
           </div>
           <div v-if="showNegative" class="tlb-fieldbox tlb-gen__negbox">
-            <textarea v-model="settings.nai.undesiredContent" class="tlb-textarea" rows="2" placeholder="留空 = 按模型取官方负面词" />
+            <textarea v-model="negativePrompt" class="tlb-textarea" rows="2" placeholder="留空 = 按模型取官方负面词" />
             <button
               class="tlb-btn tlb-btn--bare tlb-gen__negzoom"
               type="button"
