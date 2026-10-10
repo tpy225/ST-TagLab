@@ -9,7 +9,7 @@
  * - vibe:按该图记录的 vibe id 列表勾选;已不存在的 id 不勾选,经返回值上报让 UI 提示。
  */
 import { settings } from '@/state/settings';
-import { artistDraft, promptDraft } from '@/state/ui';
+import { artistDraft, artistEditor, presetAutoloadGuard, promptDraft } from '@/state/ui';
 import { updateVibe, vibeList } from '@/state/vibeList';
 import type { TlbHistoryMeta } from '@/types';
 
@@ -19,6 +19,20 @@ export interface BackfillReport {
 }
 
 export async function applyBackfill(meta: TlbHistoryMeta): Promise<BackfillReport> {
+  // 回填＝解析原圖:下面改 activeArtistId 會觸發「切預設自動載入」watch,
+  // 全程抑制,改由這裡把原圖值寫進編輯面(顯示 A 而非後來編輯過的 A')。
+  presetAutoloadGuard.suppressed = true;
+  try {
+    return await doBackfill(meta);
+  } finally {
+    // watcher 在同一輪 flush,排到下一轮再開關
+    setTimeout(() => {
+      presetAutoloadGuard.suppressed = false;
+    }, 0);
+  }
+}
+
+async function doBackfill(meta: TlbHistoryMeta): Promise<BackfillReport> {
   promptDraft.text = meta.rawPrompt;
 
   // ---- 画师串 ----
@@ -29,15 +43,19 @@ export async function applyBackfill(meta: TlbHistoryMeta): Promise<BackfillRepor
   if (match) {
     settings.activeArtistId = match.id;
     artistDraft.text = '';
+    // 原圖的詞進預設草稿(不寫回預設本身)
+    artistEditor.prompt = artistText;
+    artistEditor.quality = meta.qualityTags ?? '';
+    artistEditor.negative = meta.negative ?? '';
   } else {
     // 预设不在了:下拉留空,内容进临时草稿(无串时保持「不使用」)
     settings.activeArtistId = '';
     artistDraft.text = artistText;
+    settings.nai.qualityTags = meta.qualityTags ?? '';
+    settings.nai.undesiredContent = meta.negative ?? '';
   }
 
-  // ---- 词与参数(把当时解析后的值显式回填为覆写) ----
-  settings.nai.qualityTags = meta.qualityTags ?? '';
-  settings.nai.undesiredContent = meta.negative ?? '';
+  // ---- 参数(把当时解析后的值写回编辑面) ----
   settings.nai.model = meta.model;
   settings.nai.sampler = meta.sampler;
   settings.nai.steps = meta.steps;

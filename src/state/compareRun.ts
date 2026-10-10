@@ -112,12 +112,17 @@ export async function startCompareRun(presetIds: string[]): Promise<void> {
     }
     row.status = 'generating';
     try {
+      // 對比生成:一切以預設「已保存」的內容為準(不讀編輯草稿/當前勾選);
+      // 舊預設沒存過參數 → 缺欄回落當前全域,沒存過 vibe → 不掛 vibe。
+      const model = p.params?.model ?? settings.nai.model;
       const res = await generateNaiImage({
         prompt: promptDraft.text,
         seed: compareRun.seed,
         artistPrompt: p.prompt,
         qualityTags: p.quality.trim() || globalQualityTags(),
-        negative: p.negative.trim() || naiDefaultUndesired(settings.nai.model),
+        negative: p.negative.trim() || naiDefaultUndesired(model),
+        params: p.params,
+        vibeIds: p.vibeIds ?? [],
       });
       await addHistory(res.meta, res.blob);
       row.imageId = res.meta.id;

@@ -9,8 +9,8 @@ import { reactive, watch } from 'vue';
 
 import { NAI_OFFICIAL_URL, OFFICIAL_ENDPOINT_ID, naiDefaultQualityTags, naiDefaultUndesired } from '@/constants';
 import { removeArtistPreview } from '@/state/artistPreviews';
-import { artistDraft } from '@/state/ui';
-import type { TlbArtistPreset, TlbBotProfile, TlbBotPrompt, TlbNaiEndpoint, TlbQuickTag, TlbSettings } from '@/types';
+import { artistDraft, artistEditor } from '@/state/ui';
+import type { TlbArtistParams, TlbArtistPreset, TlbBotProfile, TlbBotPrompt, TlbNaiEndpoint, TlbQuickTag, TlbSettings } from '@/types';
 
 const STORAGE_KEY = 'tlb_settings';
 
@@ -384,23 +384,50 @@ export function activeArtistPreset() {
   return settings.artistPresets.find(a => a.id === settings.activeArtistId) ?? null;
 }
 
-/** 质量词三级回落:配方绑定 → 全局覆写 → 模型官方默认。 */
+/** 质量词:选中预设读编辑草稿(载入自预设,💾 才写回);未选读全局输入;皆空 → 模型官方默认。 */
 export function resolveQualityTags(): string {
-  return activeArtistPreset()?.quality.trim() || settings.nai.qualityTags.trim() || naiDefaultQualityTags(settings.nai.model);
+  const raw = activeArtistPreset() ? artistEditor.quality : settings.nai.qualityTags;
+  return raw.trim() || naiDefaultQualityTags(settings.nai.model);
 }
 
-/** 负面词:选中画师串时只用该预设自己的绑定值;未选预设时用输入框的临时值;皆空 → 模型官方默认。
- * 预设之间完全独立,不存在全局覆写层。 */
+/** 负面词:选中预设读编辑草稿;未选读全局输入;皆空 → 模型官方默认。 */
 export function resolveUndesired(): string {
-  const preset = activeArtistPreset();
-  const raw = preset ? preset.negative : settings.nai.undesiredContent;
+  const raw = activeArtistPreset() ? artistEditor.negative : settings.nai.undesiredContent;
   return raw.trim() || naiDefaultUndesired(settings.nai.model);
 }
 
-/** 当前生效画师串原文(未选/全空白 → 空串)。
- * 未选预设时回落到 artistDraft(回填旧图时画师串预设已不存在的临时内容,会话级)。 */
+/** 当前生效画师串原文(编辑草稿;未选预设回落 artistDraft 临时内容)。 */
 export function activeArtistPrompt(): string {
-  return activeArtistPreset()?.prompt.trim() ?? artistDraft.text.trim();
+  return activeArtistPreset() ? artistEditor.prompt.trim() : artistDraft.text.trim();
+}
+
+/** 预设保存的出图参数键(无 seed)。 */
+export const ARTIST_PARAM_KEYS = [
+  'model',
+  'sampler',
+  'steps',
+  'scale',
+  'cfgRescale',
+  'noiseSchedule',
+  'varietyBoost',
+  'portraitSize',
+  'landscapeSize',
+] as const;
+
+/** 把当前编辑面的出图参数快照成预设可存结构。 */
+export function snapshotArtistParams(): TlbArtistParams {
+  const n = settings.nai;
+  return {
+    model: n.model,
+    sampler: n.sampler,
+    steps: n.steps,
+    scale: n.scale,
+    cfgRescale: n.cfgRescale,
+    noiseSchedule: n.noiseSchedule,
+    varietyBoost: n.varietyBoost,
+    portraitSize: n.portraitSize,
+    landscapeSize: n.landscapeSize,
+  };
 }
 
 /** 手动从下拉选画师串(含「不使用」):选择即清掉临时画师串草稿。回填不走这里。 */
@@ -423,6 +450,8 @@ export const artistStore = {
       prompt: preset?.prompt ?? '',
       quality: preset?.quality ?? '',
       negative: preset?.negative ?? '',
+      vibeIds: preset?.vibeIds ? [...preset.vibeIds] : [],
+      params: preset?.params ? { ...preset.params } : undefined,
     };
     settings.artistPresets.push(item);
     return item;
@@ -430,7 +459,13 @@ export const artistStore = {
   duplicate(id: string): TlbArtistPreset | null {
     const src = settings.artistPresets.find(a => a.id === id);
     if (!src) return null;
-    const copy: TlbArtistPreset = { ...src, id: newId('art'), name: `${src.name} 副本` };
+    const copy: TlbArtistPreset = {
+      ...src,
+      id: newId('art'),
+      name: `${src.name} 副本`,
+      vibeIds: src.vibeIds ? [...src.vibeIds] : [],
+      params: src.params ? { ...src.params } : undefined,
+    };
     settings.artistPresets.push(copy);
     return copy;
   },

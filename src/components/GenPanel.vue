@@ -17,10 +17,10 @@ import {
 } from '@/nai/client';
 import { chat, extractTags } from '@/nai/bot';
 import { NAI_MODELS, NAI_NOISE_SCHEDULES, clampVibeStrength, vibeLocalModelKey } from '@/constants';
-import { activeArtistPreset, activeBotProfile, activeEndpoint, artistStore, newId, selectArtist, settings } from '@/state/settings';
+import { activeArtistPreset, activeBotProfile, activeEndpoint, artistStore, newId, selectArtist, settings, snapshotArtistParams } from '@/state/settings';
 import { addHistory, currentItem, history, loadHistory, stepSelection } from '@/state/historyList';
 import { applyBackfill } from '@/state/backfill';
-import { artistDraft, downscaleFileToDataUrl, imageUrl, promptDraft, ui } from '@/state/ui';
+import { artistDraft, artistEditor, downscaleFileToDataUrl, imageUrl, presetAutoloadGuard, promptDraft, ui } from '@/state/ui';
 import {
   addVibe,
   addVibeGroup,
@@ -87,40 +87,61 @@ onMounted(() => {
   if (!vibeList.loaded) void loadVibes();
 });
 
-/* ---- 画师串:下拉选预设 → 草稿载入;编辑只动草稿,必须点「保存」才写回预设。
- * 未选预设时编辑的是 artistDraft(回填旧图留下的临时画师串,会话级、仍参与拼装)。 */
-const artistText = ref('');
+/* ---- 画师串编辑面:选中预设 → 预设内容载入草稿(artistEditor);
+ * 编辑只动草稿,点 💾 才写回预设;未保存的草稿一样参与生成,切换预设即丢弃。
+ * 未选预设时画师串编辑 artistDraft(回填旧图的临时串,会话级)。 */
 
-// 切换预设 / 回填改选预设:重新载入该预设内容(丢弃未保存草稿)
+/** 把一组 vibe id 套到勾选态:在名单内启用、其余停用;ids === undefined(旧资料)不动。 */
+async function applyPresetVibes(ids: string[] | undefined): Promise<void> {
+  if (ids === undefined) return;
+  if (!vibeList.loaded) await loadVibes();
+  const want = new Set(ids);
+  for (const v of vibeList.items) {
+    const on = want.has(v.id);
+    if (v.enabled !== on) {
+      v.enabled = on;
+      await updateVibe(v);
+    }
+  }
+  vibeSelection.groupId = '';
+}
+
+// 切换预设:载入该预设的 prompt/质量词/负面词/参数/vibe(丢弃未保存草稿)。
+// 回填历史图时由 guard 抑制 —— 回填自己全量写入原图参数。
 watch(
   () => settings.activeArtistId,
-  () => {
-    artistText.value = activeArtistPreset()?.prompt ?? '';
+  async id => {
+    if (presetAutoloadGuard.suppressed) return;
+    const p = id ? settings.artistPresets.find(a => a.id === id) ?? null : null;
+    artistEditor.prompt = p?.prompt ?? '';
+    artistEditor.quality = p?.quality ?? '';
+    artistEditor.negative = p?.negative ?? '';
+    if (p?.params) Object.assign(settings.nai, p.params);
+    await applyPresetVibes(p?.vibeIds);
   },
   { immediate: true },
 );
 
 const artistPrompt = computed<string>({
-  get: () => (activeArtistPreset() ? artistText.value : artistDraft.text),
+  get: () => (activeArtistPreset() ? artistEditor.prompt : artistDraft.text),
   set: (v: string) => {
-    if (activeArtistPreset()) artistText.value = v;
+    if (activeArtistPreset()) artistEditor.prompt = v;
     else artistDraft.text = v;
   },
 });
 
-/** 负面词:选中预设时直接读写该预设(即时落盘,各预设独立);未选预设时才是临时输入值。留空 = 官方默认。 */
+/** 负面词草稿:选中预设读写 artistEditor(💾 写回);未选预设读写全局输入。留空 = 官方默认。 */
 const negativePrompt = computed<string>({
-  get: () => activeArtistPreset()?.negative ?? settings.nai.undesiredContent,
+  get: () => (activeArtistPreset() ? artistEditor.negative : settings.nai.undesiredContent),
   set: (v: string) => {
-    const p = activeArtistPreset();
-    if (p) p.negative = v;
+    if (activeArtistPreset()) artistEditor.negative = v;
     else settings.nai.undesiredContent = v;
   },
 });
 
 const negativeHint = computed(() =>
   activeArtistPreset()
-    ? '（當前畫師串專屬，自動保存；留空 = 官方默認）'
+    ? '（當前畫師串草稿，💾 寫入預設；留空 = 官方默認）'
     : '（留空 = 官方默认）',
 );
 
@@ -137,18 +158,22 @@ const artistPlaceholder = computed(() =>
       : '先选择或新建一个画师串预设',
 );
 
-/** 保存:把草稿写入当前预设(唯一的写回入口)。 */
+/** 💾 保存:把整个编辑面(画师串/质量词/负面词/参数/vibe 勾选)快照进当前预设。 */
 function saveArtist(): void {
   const p = activeArtistPreset();
   if (!p) {
     notify('warning', '先选择一个画师串预设');
     return;
   }
-  p.prompt = artistText.value.trim();
+  p.prompt = artistEditor.prompt.trim();
+  p.quality = artistEditor.quality.trim();
+  p.negative = artistEditor.negative.trim();
+  p.params = snapshotArtistParams();
+  p.vibeIds = vibeList.items.filter(v => v.enabled).map(v => v.id);
   notify('success', `画师串「${p.name}」已保存`);
 }
 
-/** 另存:用当前草稿建一个新预设,弹窗要求命名。 */
+/** 另存:用当前编辑面快照建一个新预设,弹窗要求命名。 */
 function saveArtistAs(): void {
   const text = artistPrompt.value.trim();
   const cur = activeArtistPreset();
@@ -159,7 +184,14 @@ function saveArtistAs(): void {
     notify('warning', '名称不能为空');
     return;
   }
-  const item = artistStore.add({ name, prompt: text, negative: cur ? cur.negative : '' });
+  const item = artistStore.add({
+    name,
+    prompt: text,
+    quality: cur ? artistEditor.quality.trim() : settings.nai.qualityTags.trim(),
+    negative: cur ? artistEditor.negative.trim() : settings.nai.undesiredContent.trim(),
+    params: snapshotArtistParams(),
+    vibeIds: vibeList.items.filter(v => v.enabled).map(v => v.id),
+  });
   selectArtist(item.id);
   notify('success', `已另存为「${name}」`);
 }
@@ -243,8 +275,6 @@ async function runBackfill(meta: TlbHistoryMeta | null): Promise<void> {
   // 种子不回填:始终保持 0(随机),想复刻再手填
   error.value = '';
   const r = await applyBackfill(meta);
-  // 回填可能改选预设(id 不变时 watcher 不触发),草稿一律按当前预设重载
-  artistText.value = activeArtistPreset()?.prompt ?? '';
   // 回填会按历史快照重排 vibe 勾选,组选择必然不再对应,复位
   vibeSelection.groupId = '';
   setVibeStatus('');

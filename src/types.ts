@@ -7,6 +7,19 @@
  * - 历史(IndexedDB 'st-taglab'):图片 Blob 与元数据(含收藏标记)。
  */
 
+/** 画师串可保存的出图参数快照(不含 seed)。 */
+export interface TlbArtistParams {
+  model: string;
+  sampler: string;
+  steps: number;
+  scale: number;
+  cfgRescale: number;
+  noiseSchedule: string;
+  varietyBoost: boolean;
+  portraitSize: string;
+  landscapeSize: string;
+}
+
 /** 一条画师串配方。 */
 export interface TlbArtistPreset {
   id: string;
@@ -14,10 +27,14 @@ export interface TlbArtistPreset {
   name: string;
   /** 画师/画风 tag 串,按「拼接次序」设置与提示词拼装;空串 = 不参与拼装。 */
   prompt: string;
-  /** 绑定的正面质量词;空串 = 跟随全局覆写 → 模型官方默认。 */
+  /** 绑定的正面质量词;空串 = 模型官方默认。 */
   quality: string;
-  /** 绑定的负面提示词;空串 = 跟随全局覆写 → 模型官方默认。 */
+  /** 绑定的负面提示词;空串 = 模型官方默认。 */
   negative: string;
+  /** 保存时勾选的 vibe id 列表(强度沿用 vibe 条目自身);缺字段 = 旧资料,不覆盖当前勾选。 */
+  vibeIds?: string[];
+  /** 保存时的出图参数快照;缺字段 = 旧资料/同步来源未提供,切换时不覆盖当前参数。 */
+  params?: TlbArtistParams;
 }
 
 /** 快捷输入条目:chip 显示标题(无标题则显示内容),点击插入内容。 */

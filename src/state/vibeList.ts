@@ -66,6 +66,12 @@ export function enabledVibes(): TlbVibe[] {
   return vibeList.items.filter(v => v.enabled && v.strength > 0);
 }
 
+/** 按 id 集合取 vibe(对比生成用各预设自己保存的名单,与勾选态无关);强度 ≤0 的跳过。 */
+export function vibesByIds(ids: string[]): TlbVibe[] {
+  const want = new Set(ids);
+  return vibeList.items.filter(v => want.has(v.id) && v.strength > 0);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Vibe 组
 // ═══════════════════════════════════════════════════════════════════════════

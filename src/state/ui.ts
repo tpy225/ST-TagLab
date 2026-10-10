@@ -39,6 +39,19 @@ export const promptDraft = reactive({ text: '' });
  */
 export const artistDraft = reactive({ text: '' });
 
+/**
+ * 畫師串編輯面草稿（prompt / 正面質量詞 / 負面詞）。
+ * 選中預設時由預設內容載入，編輯只動草稿，點 💾 才寫回預設；生成吃草稿值，
+ * 所以未保存的改動一樣生效，切換預設則丟棄（與輸入框一貫語義）。
+ */
+export const artistEditor = reactive({ prompt: '', quality: '', negative: '' });
+
+/**
+ * 回填歷史圖期間抑制「切換預設自動載入」watch：回填自己會把原圖的完整參數
+ * 寫進編輯面，不能被預設已存值覆蓋。backfill 前置 true、當輪事件結束後復位。
+ */
+export const presetAutoloadGuard = reactive({ suppressed: false });
+
 export function openPanel(tab?: TlbTab): void {
   if (tab) ui.tab = tab;
   ui.panelOpen = true;

@@ -24,9 +24,11 @@ import {
   vibeLocalModelKey,
 } from '@/constants';
 import { activeArtistPrompt, activeEndpoint, resolveQualityTags, resolveUndesired, settings } from '@/state/settings';
-import { enabledVibes, updateVibe, vibeList } from '@/state/vibeList';
+import { enabledVibes, updateVibe, vibeList, vibesByIds } from '@/state/vibeList';
 import type {
+  TlbArtistParams,
   TlbHistoryMeta,
+  TlbNai,
   TlbVibe,
   TlbVibeEncodings,
   TlbVibeGroup,
@@ -69,6 +71,10 @@ export interface GenerateInput {
   qualityTags?: string;
   /** 负面词覆写;缺省按回落链。 */
   negative?: string;
+  /** 出图参数覆写(对比生成:各预设已保存快照);缺省用编辑面 settings.nai。 */
+  params?: Partial<TlbArtistParams>;
+  /** 指定叠加的 vibe id 集合(对比生成:各预设自己保存的名单);缺省用当前勾选。 */
+  vibeIds?: string[];
 }
 
 export interface GenerateResult {
@@ -79,25 +85,28 @@ export interface GenerateResult {
 function buildParameters(
   prompt: string,
   seed: number,
-  artist?: string,
-  quality?: string,
-  negative?: string,
-): { params: Record<string, unknown>; size: NaiSize } {
-  const nai = settings.nai;
-  const { width, height } = parseResolution(nai.portraitSize || '832×1216');
-  const model = nai.model;
-  const sampler = isNai5(model) && !naiSamplers(model).some(s => s.value === nai.sampler) ? 'k_euler_ancestral' : nai.sampler;
+  artist: string | undefined,
+  quality: string | undefined,
+  negative: string | undefined,
+  override: Partial<TlbArtistParams> | undefined,
+  vibes: TlbVibe[],
+): { params: Record<string, unknown>; size: NaiSize; model: string; eff: TlbNai } {
+  // 编辑面 settings.nai 为主,预设参数快照(对比生成)逐字段覆盖
+  const eff: TlbNai = { ...settings.nai, ...(override ?? {}) };
+  const { width, height } = parseResolution(eff.portraitSize || '832×1216');
+  const model = eff.model;
+  const sampler = isNai5(model) && !naiSamplers(model).some(s => s.value === eff.sampler) ? 'k_euler_ancestral' : eff.sampler;
   const fullPrompt = buildFullPrompt(prompt, artist, quality);
   const neg = negative ?? resolveUndesired();
-  const skipCfg = skipCfgAboveSigma(width, height, model, nai.varietyBoost);
+  const skipCfg = skipCfgAboveSigma(width, height, model, eff.varietyBoost);
 
   const params: Record<string, unknown> = {
     params_version: isNai5(model) ? 4 : 3,
     width,
     height,
-    scale: nai.scale,
+    scale: eff.scale,
     sampler,
-    steps: nai.steps,
+    steps: eff.steps,
     n_samples: 1,
     ucPreset: 3,
     qualityToggle: true,
@@ -106,8 +115,8 @@ function buildParameters(
     legacy: false,
     legacy_uc: false,
     add_original_image: true,
-    cfg_rescale: nai.cfgRescale,
-    noise_schedule: nai.noiseSchedule,
+    cfg_rescale: eff.cfgRescale,
+    noise_schedule: eff.noiseSchedule,
     skip_cfg_above_sigma: skipCfg,
     legacy_v3_extend: false,
     stream: 'msgpack',
@@ -141,8 +150,8 @@ function buildParameters(
     params.deliberate_euler_ancestral_bug = false;
     params.prefer_brownian = true;
   }
-  applyVibes(params);
-  return { params, size: { width, height } };
+  applyVibes(params, model, vibes);
+  return { params, size: { width, height }, model, eff };
 }
 
 /**
@@ -150,11 +159,10 @@ function buildParameters(
  * 编码数据进 `reference_image_multiple_cached`(随机 cache key),强度并进
  * `reference_strength_multiple`。返回被跳过的 vibe 名(缺当前模型编码)。
  */
-function applyVibes(params: Record<string, unknown>): string[] {
-  const vibes = enabledVibes();
+function applyVibes(params: Record<string, unknown>, model: string, vibes: TlbVibe[]): string[] {
   if (!vibes.length) return [];
   // Vibe 仅 NAI V4 / V4.5 支持(对齐小白X);其他模型一律不注入
-  const modelKey = vibeLocalModelKey(settings.nai.model);
+  const modelKey = vibeLocalModelKey(model);
   if (!modelKey) return [];
   const cached = params.reference_image_multiple_cached as { cache_secret_key: string; data: string }[];
   const strengths = params.reference_strength_multiple as number[];
@@ -302,13 +310,16 @@ async function doGenerate(input: GenerateInput, signal?: AbortSignal): Promise<G
   const artist = input.artistPrompt ?? activeArtistPrompt();
   const quality = input.qualityTags ?? resolveQualityTags();
   const negative = input.negative ?? resolveUndesired();
-  // 缺当前模型编码的启用 vibe:先用原图即时编码(花点数),成功的回写库
-  await ensureVibesEncoded(signal);
-  const { params, size } = buildParameters(input.prompt, seed, artist, quality, negative);
+  // 实际生效参数(对比生成时被预设快照覆盖)与实际叠加的 vibe 名单
+  const model = input.params?.model ?? settings.nai.model;
+  const vibes = input.vibeIds ? vibesByIds(input.vibeIds) : enabledVibes();
+  // 缺当前模型编码的 vibe:先用原图即时编码(花点数),成功的回写库
+  await ensureVibesEncoded(signal, vibes, model);
+  const { params, size, eff } = buildParameters(input.prompt, seed, artist, quality, negative, input.params, vibes);
   const fullPrompt = buildFullPrompt(input.prompt, artist, quality);
   const body = {
     input: fullPrompt,
-    model: settings.nai.model,
+    model,
     action: 'generate',
     parameters: params,
     use_new_shared_trial: true,
@@ -338,15 +349,15 @@ async function doGenerate(input: GenerateInput, signal?: AbortSignal): Promise<G
         artistPrompt: artist,
         // 覆写画师串(多画师串对比)不属于任何预设;普通生成记录当前选中 id
         artistId: input.artistPrompt !== undefined ? '' : settings.activeArtistId,
-        // 实际叠加的 vibe(启用且强度>0);回填时据此勾选,已删除的 id 提示缺失
-        vibeIds: enabledVibes().map(v => v.id),
+        // 实际叠加的 vibe;回填时据此勾选,已删除的 id 提示缺失
+        vibeIds: vibes.map(v => v.id),
         qualityTags: quality,
-        model: settings.nai.model,
+        model: eff.model,
         sampler: params.sampler as string,
-        steps: settings.nai.steps,
-        scale: settings.nai.scale,
-        cfgRescale: settings.nai.cfgRescale,
-        noiseSchedule: settings.nai.noiseSchedule,
+        steps: eff.steps,
+        scale: eff.scale,
+        cfgRescale: eff.cfgRescale,
+        noiseSchedule: eff.noiseSchedule,
         seed,
         width: size.width,
         height: size.height,
@@ -442,11 +453,15 @@ export async function encodeVibeImage(
  * 生成前补齐:所有启用且强度>0、但缺当前模型编码的 vibe,用库里原图即时编码并回写。
  * 部分失败时抛错(成功的已落盘,重试只编剩余的)。
  */
-export async function ensureVibesEncoded(signal?: AbortSignal): Promise<void> {
+export async function ensureVibesEncoded(
+  signal?: AbortSignal,
+  vibes: TlbVibe[] = enabledVibes(),
+  model: string = settings.nai.model,
+): Promise<void> {
   // 仅 V4 / V4.5 支持编码;其他模型没有要补的
-  const modelKey = vibeLocalModelKey(settings.nai.model);
+  const modelKey = vibeLocalModelKey(model);
   if (!modelKey) return;
-  const pending = enabledVibes().filter(v => !v.encodings[modelKey]?.encoding);
+  const pending = vibes.filter(v => !v.encodings[modelKey]?.encoding);
   if (!pending.length) return;
   const failed: string[] = [];
   for (const v of pending) {
