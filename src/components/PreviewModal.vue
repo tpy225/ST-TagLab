@@ -231,13 +231,13 @@ async function submitTagInput(): Promise<void> {
 
           <button
             v-if="!isMobile && history.items.length > 1"
-            class="tlb-pv__nav tlb-pv__nav--prev"
+            class="tlb-pv__nav tlb-pv__nav--l"
             title="上一張"
             @click="stepSelection(-1)"
           ><Icon name="chevron-left" :size="22" /></button>
           <button
             v-if="!isMobile && history.items.length > 1"
-            class="tlb-pv__nav tlb-pv__nav--next"
+            class="tlb-pv__nav tlb-pv__nav--r"
             title="下一張"
             @click="stepSelection(1)"
           ><Icon name="chevron-right" :size="22" /></button>
@@ -403,8 +403,8 @@ async function submitTagInput(): Promise<void> {
   background: var(--tlb-surface-2);
 }
 
-.tlb-pv__nav--prev { left: 12px; }
-.tlb-pv__nav--next { right: 12px; }
+.tlb-pv__nav--l { left: 12px; }
+.tlb-pv__nav--r { right: 12px; }
 
 .tlb-pv__stage img {
   max-width: 100%;
