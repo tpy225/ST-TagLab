@@ -139,11 +139,7 @@ const negativePrompt = computed<string>({
   },
 });
 
-const negativeHint = computed(() =>
-  activeArtistPreset()
-    ? '（當前畫師串草稿，💾 寫入預設；留空 = 官方默認）'
-    : '（留空 = 官方默认）',
-);
+const negativeHint = '（留空 = 官方默認）';
 
 /** 下拉手动选择(含「不使用」):清掉临时画师串草稿。 */
 function onArtistPick(id: string | number): void {
